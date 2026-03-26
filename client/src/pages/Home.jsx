@@ -443,56 +443,8 @@ function ScheduleCard() {
   );
 }
 
-// function ActivityCard() {
-//   function renderText(text) {
-//     const parts = text.split(/\*\*(.*?)\*\*/g);
-//     return parts.map((part, i) =>
-//       i % 2 === 1
-//         ? <span key={i} className="font-semibold text-[#08060d]">{part}</span>
-//         : <span key={i}>{part}</span>
-//     );
-//   }
 
-//   return (
-//     <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 flex flex-col gap-4 h-full">
-//       <div className="flex items-center justify-between">
-//         <div>
-//           <h2 className="text-[15px] font-semibold text-[#08060d]">Aktivitas Terbaru</h2>
-//           <p className="text-[12px] text-[#9ca3af] mt-0.5">Update sistem real-time</p>
-//         </div>
-//         <button className="text-[12px] text-[#6C63FF] font-medium hover:underline flex items-center gap-0.5">
-//           Lihat semua <ChevronRight size={13} />
-//         </button>
-//       </div>
-
-//       <div className="flex flex-col flex-1 overflow-y-auto">
-//         {ACTIVITIES.map((a, i) => (
-//           <div key={a.id} className="flex items-start gap-3 py-3 relative">
-//             {/* Timeline line */}
-//             {i < ACTIVITIES.length - 1 && (
-//               <div className="absolute left-[19px] top-[44px] w-px h-[calc(100%-20px)] bg-[#F1F5F9]" />
-//             )}
-
-//             <div
-//               className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 z-10"
-//               style={{ background: a.bg }}
-//             >
-//               <a.icon size={15} style={{ color: a.color }} />
-//             </div>
-//             <div className="flex-1 min-w-0 pt-0.5">
-//               <p className="text-[13px] text-[#6b6375] leading-snug">
-//                 {renderText(a.text)}
-//               </p>
-//               <p className="text-[11px] text-[#9ca3af] mt-1">{a.time}</p>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-// ── Main Page ────────────────────────────────────────────────
+// ── Main Page 
 
 export default function HomePage() {
   const hour = new Date().getHours();

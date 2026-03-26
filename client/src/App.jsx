@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./Layout/Layout";
 import Home from "./pages/Home";
 
-// Untuk App yang belum selesai untuk menampilkan halaman sementara
+// Untuk App yang belum selesai dapat menampilkan halaman sementara
 function ComingSoon({ page }) {
 	return (
 		<div className="flex flex-col items-center justify-center h-full gap-3 text-[#9ca3af]">
@@ -48,9 +48,9 @@ const ROUTES = [
 	{ path: "/", element: <Navigate to="/home" replace /> },
 	{ path: "/home", element: <Home page="Home" />, active: "Home" },
 	{
-		path: "/students",
-		element: <ComingSoon page="Students" />,
-		active: "Students",
+		path: "/class",
+		element: <ComingSoon page="Class" />,
+		active: "Class",
 	},
 	{
 		path: "/teachers",

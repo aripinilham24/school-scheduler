@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 // Nav item config
 const NAV_ITEMS = [
   { icon: Home,          label: "Home",       path: "/home" },
-  { icon: Users,         label: "Students",   path: "/students" },
+  { icon: Users,         label: "Class",   path: "/class" },
   { icon: GraduationCap, label: "Teachers",   path: "/teachers" },
   { icon: BookOpen,      label: "Courses",    path: "/courses" },
   { icon: Video,         label: "Live Class", path: "/live" },

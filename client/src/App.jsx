@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./Layout/Layout";
 import Home from "./pages/Home";
+import Teacher from "./pages/Teacher";
 
 // Untuk App yang belum selesai untuk menampilkan halaman sementara
 function ComingSoon({ page }) {
@@ -54,7 +55,7 @@ const ROUTES = [
 	},
 	{
 		path: "/teachers",
-		element: <ComingSoon page="Teachers" />,
+		element: <Teacher page="Teachers" />,
 		active: "Teachers",
 	},
 	{

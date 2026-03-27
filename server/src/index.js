@@ -3,8 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import teacherRoutes from "./routes/teachers.js";
-import classroomRoutes from "./routes/classrooms.js";
-import subjectRoutes from "./routes/subjects.js";
+// import classroomRoutes from "./routes/classrooms.js";
+// import subjectRoutes from "./routes/subjects.js";
 
 dotenv.config();
 
@@ -22,8 +22,8 @@ app.use(express.json());
 
 // ── Routes ───────────────────────────────────────────────────
 app.use("/api/teachers", teacherRoutes);
-app.use("/api/classrooms", classroomRoutes);
-app.use("/api/subjects", subjectRoutes);
+// app.use("/api/classrooms", classroomRoutes);
+// app.use("/api/subjects", subjectRoutes);
 
 // ── Health check ─────────────────────────────────────────────
 app.get("/api/health", (req, res) => {

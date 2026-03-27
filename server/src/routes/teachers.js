@@ -1,8 +1,9 @@
 import { Router } from "express";
 import teacherController from "../controllers/teachers_controller.js";
-import { db } from "./../lib/firebase.js";
+import db from "./../lib/firestore.js";
 
 const router = Router();
+const COL = "teachers";
 
 // Ambil data semua guru
 router.get("/", async (req, res) => {

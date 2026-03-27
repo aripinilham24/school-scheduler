@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import teacherRoutes from "./routes/teachers.js";
+import scheduleRoutes from "./routes/schedules.js";
 // import classroomRoutes from "./routes/classrooms.js";
 // import subjectRoutes from "./routes/subjects.js";
 
@@ -22,6 +23,7 @@ app.use(express.json());
 
 // ── Routes ───────────────────────────────────────────────────
 app.use("/api/teachers", teacherRoutes);
+app.use("/api/schedules", scheduleRoutes);
 // app.use("/api/classrooms", classroomRoutes);
 // app.use("/api/subjects", subjectRoutes);
 

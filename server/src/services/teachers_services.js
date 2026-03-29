@@ -3,6 +3,7 @@ import db from "../lib/firestore.js";
 
 const teachersCollection = db.collection("teachers");
 
+// Standarisasi Input dan Validasi
 function normalizeTeacherInput(raw) {
   return {
     name: (raw.name || "").toString().trim(),
@@ -17,6 +18,7 @@ function normalizeTeacherInput(raw) {
   };
 }
 
+// Validasi Payload untuk Create dan Update
 function validateTeacherPayload(payload, { requireAllFields = false } = {}) {
   const errors = [];
   const teacher = normalizeTeacherInput(payload);
@@ -53,6 +55,8 @@ function validateTeacherPayload(payload, { requireAllFields = false } = {}) {
   return { teacher, errors };
 }
 
+
+// List Guru dengan filter pencarian
 export async function listTeachers({ search = "", subject, status } = {}) {
   let query = teachersCollection;
 
@@ -79,6 +83,7 @@ export async function listTeachers({ search = "", subject, status } = {}) {
   return items;
 }
 
+// Mengambil data guru berdasarkan ID
 export async function getTeacherById(id) {
   if (!id) throw new Error("ID teacher tidak valid");
   const doc = await teachersCollection.doc(id).get();
@@ -86,6 +91,7 @@ export async function getTeacherById(id) {
   return { id: doc.id, ...doc.data() };
 }
 
+// Tambah Guru
 export async function createTeacher(payload) {
   const { teacher, errors } = validateTeacherPayload(payload, { requireAllFields: true });
   if (errors.length) {
@@ -104,6 +110,7 @@ export async function createTeacher(payload) {
   return getTeacherById(newDoc.id);
 }
 
+// Update Guru
 export async function updateTeacher(id, payload) {
   if (!id) {
     const err = new Error("ID teacher diperlukan");
@@ -135,6 +142,7 @@ export async function updateTeacher(id, payload) {
   return getTeacherById(id);
 }
 
+// Hapus GUru
 export async function deleteTeacher(id) {
   if (!id) {
     const err = new Error("ID teacher diperlukan");

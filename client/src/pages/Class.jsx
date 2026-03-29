@@ -5,18 +5,8 @@ import {
   Download, Calendar, Zap, CheckCircle2,
   MoreVertical, GraduationCap, RefreshCw,
 } from "lucide-react";
-
-// ─── Dummy Data ───────────────────────────────────────────────────────────────
-const INITIAL_CLASSES = [
-  { id: 1, name: "Matematika Dasar", subject: "Matematika", room: "R-101", duration: 90, sessionsPerWeek: 3, students: 32 },
-  { id: 2, name: "Bahasa Indonesia Lanjut", subject: "Bahasa Indonesia", room: "R-102", duration: 60, sessionsPerWeek: 2, students: 28 },
-  { id: 3, name: "Fisika Modern", subject: "Fisika", room: "Lab-A", duration: 120, sessionsPerWeek: 2, students: 24 },
-  { id: 4, name: "Kimia Organik", subject: "Kimia", room: "Lab-B", duration: 120, sessionsPerWeek: 2, students: 20 },
-  { id: 5, name: "Sejarah Dunia", subject: "Sejarah", room: "R-103", duration: 60, sessionsPerWeek: 3, students: 35 },
-  { id: 6, name: "Ekonomi Mikro", subject: "Ekonomi", room: "R-104", duration: 90, sessionsPerWeek: 2, students: 30 },
-  { id: 7, name: "Biologi Sel", subject: "Biologi", room: "Lab-C", duration: 90, sessionsPerWeek: 2, students: 22 },
-  { id: 8, name: "Seni Rupa", subject: "Seni", room: "Studio", duration: 120, sessionsPerWeek: 1, students: 18 },
-];
+import Swal from "sweetalert2";
+import { useClasses } from "@/hooks/useClasses";
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 const TIME_SLOTS = ["07:00", "08:30", "10:00", "11:30", "13:00", "14:30", "16:00"];
@@ -476,8 +466,8 @@ function ScheduleTab({ schedule, onRegenerate }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ClassPage() {
+  const { classes, loading, error, addClass, updateClass, deleteClass } = useClasses();
   const [tab, setTab] = useState("classes");
-  const [classes, setClasses] = useState(INITIAL_CLASSES);
   const [schedule, setSchedule] = useState([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
@@ -486,7 +476,7 @@ export default function ClassPage() {
   const filtered = classes.filter((c) =>
     !search ||
     c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.subject.toLowerCase().includes(search.toLowerCase())
+    (c.classCode || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const handleGenerate = () => {
@@ -494,13 +484,52 @@ export default function ClassPage() {
     setTab("schedule");
   };
 
-  const handleAdd    = (form) => setClasses((p) => [...p, { ...form, id: Date.now() }]);
-  const handleEdit   = (form) => setClasses((p) => p.map((c) => c.id === selected.id ? { ...c, ...form } : c));
-  const handleDelete = (id)   => setClasses((p) => p.filter((c) => c.id !== id));
+  const handleAdd = async (form) => {
+    try {
+      await addClass(form);
+      setModal(null);
+      Swal.fire({ icon: "success", title: "Berhasil", text: "Kelas baru telah ditambahkan", timer: 1500 });
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Gagal", text: err.message });
+    }
+  };
 
-  const totalSessions = classes.reduce((a, c) => a + c.sessionsPerWeek, 0);
-  const totalHours    = classes.reduce((a, c) => a + (c.duration * c.sessionsPerWeek) / 60, 0);
-  const conflicts     = schedule.filter((s) => s.conflict).length;
+  const handleEdit = async (form) => {
+    try {
+      await updateClass(selected.id, form);
+      setModal(null);
+      setSelected(null);
+      Swal.fire({ icon: "success", title: "Berhasil", text: "Kelas telah diperbarui", timer: 1500 });
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Gagal", text: err.message });
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteClass(id);
+      setModal(null);
+      setSelected(null);
+      Swal.fire({ icon: "success", title: "Berhasil", text: "Kelas telah dihapus", timer: 1500 });
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Gagal", text: err.message });
+    }
+  };
+
+  const totalSessions = classes.reduce((a, c) => a + (c.sessionsPerWeek || 0), 0);
+  const totalHours = classes.reduce((a, c) => a + ((c.duration || 0) * (c.sessionsPerWeek || 0)) / 60, 0);
+  const conflicts = schedule.filter((s) => s.conflict).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full bg-[#F8FAFC]">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw size={28} className="text-[#6C63FF] animate-spin" />
+          <p className="text-[#6b6375]">Memuat data kelas...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC] overflow-hidden">

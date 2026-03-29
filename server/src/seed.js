@@ -111,15 +111,15 @@ const teachers = [
 ];
 
 const classrooms = [
-  { name: "Ruang A1", capacity: 35, floor: 1, description: "Ruang teori lantai 1" },
-  { name: "Ruang A2", capacity: 35, floor: 1, description: "Ruang teori lantai 1" },
-  { name: "Ruang B1", capacity: 40, floor: 2, description: "Ruang teori lantai 2" },
-  { name: "Ruang B2", capacity: 40, floor: 2, description: "Ruang teori lantai 2" },
-  { name: "Lab Komputer", capacity: 30, floor: 1, description: "Laboratorium komputer" },
-  { name: "Lab Fisika",   capacity: 25, floor: 2, description: "Laboratorium fisika" },
-  { name: "Lab Biologi",  capacity: 25, floor: 2, description: "Laboratorium biologi" },
-  { name: "Lab Kimia",    capacity: 25, floor: 3, description: "Laboratorium kimia" },
-  { name: "Aula",         capacity: 200, floor: 1, description: "Aula serbaguna" },
+  { name: "Kelas 10-1",        code: "10-01", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 10-2",        code: "10-02", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 10-3",        code: "10-03", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 11-1",        code: "11-01", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 11-2",        code: "11-02", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 11-3",        code: "11-03", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 12-1",        code: "12-01", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 12-2",        code: "12-02", description: "Matematika dasar dan lanjutan" },
+  { name: "Kelas 12-3",        code: "12-03", description: "Matematika dasar dan lanjutan" },
 ];
 
 const subjects = [

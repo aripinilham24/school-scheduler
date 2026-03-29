@@ -59,6 +59,8 @@ export async function listTeachers({ search = "", subject, status } = {}) {
   if (subject) query = query.where("subject", "==", subject);
   if (status) query = query.where("status", "==", status);
 
+  query = query.orderBy("createdAt", "desc");
+
   const snapshot = await query.get();
   const items = [];
   snapshot.forEach((doc) => {

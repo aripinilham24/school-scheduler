@@ -3,6 +3,7 @@ import Layout from "./Layout/Layout";
 import Home from "./pages/Home";
 import Class from "./pages/Class";
 import Teacher from "./pages/Teacher";
+import Schedule from "./pages/Schedule";
 
 // Untuk App yang belum selesai dapat menampilkan halaman sementara
 function ComingSoon({ page }) {
@@ -66,7 +67,7 @@ const ROUTES = [
 	},
 	{
 		path: "/generate",
-		element: <ComingSoon page="Generate Jadwal" />,
+		element: <Schedule page="Generate Jadwal" />,
 		active: "Generate Jadwal",
 	},
 	{

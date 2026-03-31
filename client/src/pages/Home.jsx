@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   GraduationCap,
   Users,
@@ -16,11 +16,15 @@ import {
   BookPlus,
   CreditCard,
   CalendarCheck,
+  RefreshCw,
 } from "lucide-react";
+import { useClasses } from "@/hooks/useClasses";
+import { useTeachers } from "@/hooks/useTeachers";
+// import { useTeacherSchedule } from "@/hooks/useTeacherSchedule";
 
 // ── Dummy Data ───────────────────────────────────────────────
 
-const STATS = [
+const INITIAL_STATS = [
   {
     label: "Total Guru",
     value: 24,
@@ -40,7 +44,7 @@ const STATS = [
     bg: "rgba(52,211,153,0.08)",
   },
   {
-    label: "Kursus Aktif",
+    label: "Kelas",
     value: 38,
     trend: +5,
     trendLabel: "bulan ini",
@@ -57,16 +61,6 @@ const STATS = [
     color: "#F9A8D4",
     bg: "rgba(249,168,212,0.08)",
   },
-];
-
-const ATTENDANCE = [
-  { day: "Sen", value: 87, total: 100 },
-  { day: "Sel", value: 92, total: 100 },
-  { day: "Rab", value: 78, total: 100 },
-  { day: "Kam", value: 95, total: 100 },
-  { day: "Jum", value: 88, total: 100 },
-  { day: "Sab", value: 65, total: 100 },
-  { day: "Min", value: 45, total: 100 },
 ];
 
 const ANNOUNCEMENTS = [
@@ -100,62 +94,14 @@ const ANNOUNCEMENTS = [
   },
 ];
 
-const SCHEDULE = [
-  {
-    id: 1,
-    subject: "Mathematics",
-    teacher: "Dr. Sarah Johnson",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-    room: "Ruang A1",
-    start: "07.30",
-    end: "09.00",
-    status: "done",
-    color: "#6C63FF",
-  },
-  {
-    id: 2,
-    subject: "Physics",
-    teacher: "Prof. Michael Chen",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=michael",
-    room: "Lab Fisika",
-    start: "09.15",
-    end: "10.45",
-    status: "ongoing",
-    color: "#60A5FA",
-  },
-  {
-    id: 3,
-    subject: "Computer Science",
-    teacher: "Mr. Rizky Pratama",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=rizky",
-    room: "Lab Komputer",
-    start: "11.00",
-    end: "12.30",
-    status: "upcoming",
-    color: "#A78BFA",
-  },
-  {
-    id: 4,
-    subject: "English Literature",
-    teacher: "Ms. Ayu Rahmawati",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ayu",
-    room: "Ruang B2",
-    start: "13.30",
-    end: "15.00",
-    status: "upcoming",
-    color: "#34D399",
-  },
-  {
-    id: 5,
-    subject: "Biology",
-    teacher: "Dr. Lisa Huang",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=lisa",
-    room: "Lab Biologi",
-    start: "15.15",
-    end: "16.45",
-    status: "upcoming",
-    color: "#FBBF24",
-  },
+const ATTENDANCE = [
+  { day: "Sen", value: 87, total: 100 },
+  { day: "Sel", value: 92, total: 100 },
+  { day: "Rab", value: 78, total: 100 },
+  { day: "Kam", value: 95, total: 100 },
+  { day: "Jum", value: 88, total: 100 },
+  { day: "Sab", value: 65, total: 100 },
+  { day: "Min", value: 45, total: 100 },
 ];
 
 const ACTIVITIES = [
@@ -366,13 +312,32 @@ function AnnouncementCard() {
   );
 }
 
-const STATUS_CONFIG = {
-  done:     { label: "Selesai",    color: "#059669", bg: "rgba(5,150,105,0.08)" },
-  ongoing:  { label: "Berlangsung", color: "#6C63FF", bg: "rgba(108,99,255,0.1)" },
-  upcoming: { label: "Upcoming",   color: "#D97706", bg: "rgba(217,119,6,0.08)" },
-};
+function ScheduleCard({ scheduleData, teachersData, loading }) {
+  const colors = ["#6C63FF", "#60A5FA", "#A78BFA", "#34D399", "#FBBF24", "#F9A8D4"];
+  
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 flex flex-col gap-4 h-full items-center justify-center">
+        <RefreshCw size={24} className="text-[#6C63FF] animate-spin" />
+        <p className="text-sm text-[#9ca3af]">Memuat jadwal...</p>
+      </div>
+    );
+  }
 
-function ScheduleCard() {
+  const schedule = scheduleData && scheduleData.length > 0 
+    ? scheduleData.map((s, idx) => ({
+        id: s.id,
+        subject: s.name || s.classCode || "Kelas",
+        teacher: s.teacher || "Guru",
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.teacher || idx}`,
+        room: s.room || "Ruang",
+        start: s.schedule?.split(" ")[1]?.slice(0, 5) || "07.30",
+        end: "09.00",
+        status: "upcoming",
+        color: colors[idx % colors.length],
+      }))
+    : [];
+
   return (
     <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between">
@@ -387,69 +352,108 @@ function ScheduleCard() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
-        {SCHEDULE.map((s) => {
-          const cfg = STATUS_CONFIG[s.status];
-          const isOngoing = s.status === "ongoing";
-          return (
-            <div
-              key={s.id}
-              className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-[#F8FAFC] cursor-pointer"
-              style={{
-                border: isOngoing ? `1.5px solid ${s.color}30` : "1.5px solid transparent",
-                background: isOngoing ? `${s.color}05` : undefined,
-              }}
-            >
-              {/* Time */}
-              <div className="flex flex-col items-center shrink-0 w-[46px] gap-0.5">
-                <span className="text-[12px] font-bold text-[#08060d]">{s.start}</span>
-                <div className="w-px h-3 bg-[#E5E7EB]" />
-                <span className="text-[11px] text-[#9ca3af]">{s.end}</span>
-              </div>
-
-              {/* Color accent */}
-              <div className="w-[3px] h-10 rounded-full shrink-0" style={{ background: s.color }} />
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-[#08060d] truncate">{s.subject}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <img
-                    src={s.avatar}
-                    alt={s.teacher}
-                    className="w-4 h-4 rounded-full object-cover"
-                    style={{ background: `${s.color}20` }}
-                  />
-                  <span className="text-[11px] text-[#6b6375] truncate">{s.teacher}</span>
-                </div>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <Clock size={10} className="text-[#9ca3af]" />
-                  <span className="text-[11px] text-[#9ca3af]">{s.room}</span>
-                </div>
-              </div>
-
-              {/* Status */}
-              <span
-                className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                style={{ color: cfg.color, background: cfg.bg }}
+      {schedule.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center text-center py-8">
+          <div>
+            <BookOpen size={32} className="text-[#9ca3af] mx-auto mb-2 opacity-50" />
+            <p className="text-sm text-[#9ca3af]">Tidak ada jadwal hari ini</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
+          {schedule.slice(0, 5).map((s) => {
+            const STATUS_CONFIG = {
+              done:     { label: "Selesai",    color: "#059669", bg: "rgba(5,150,105,0.08)" },
+              ongoing:  { label: "Berlangsung", color: "#6C63FF", bg: "rgba(108,99,255,0.1)" },
+              upcoming: { label: "Upcoming",   color: "#D97706", bg: "rgba(217,119,6,0.08)" },
+            };
+            const cfg = STATUS_CONFIG[s.status];
+            const isOngoing = s.status === "ongoing";
+            return (
+              <div
+                key={s.id}
+                className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-[#F8FAFC] cursor-pointer"
+                style={{
+                  border: isOngoing ? `1.5px solid ${s.color}30` : "1.5px solid transparent",
+                  background: isOngoing ? `${s.color}05` : undefined,
+                }}
               >
-                {cfg.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+                <div className="flex flex-col items-center shrink-0 w-[46px] gap-0.5">
+                  <span className="text-[12px] font-bold text-[#08060d]">{s.start}</span>
+                  <div className="w-px h-3 bg-[#E5E7EB]" />
+                  <span className="text-[11px] text-[#9ca3af]">{s.end}</span>
+                </div>
+
+                <div className="w-[3px] h-10 rounded-full shrink-0" style={{ background: s.color }} />
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-[#08060d] truncate">{s.subject}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <img
+                      src={s.avatar}
+                      alt={s.teacher}
+                      className="w-4 h-4 rounded-full object-cover"
+                      style={{ background: `${s.color}20` }}
+                    />
+                    <span className="text-[11px] text-[#6b6375] truncate">{s.teacher}</span>
+                  </div>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <Clock size={10} className="text-[#9ca3af]" />
+                    <span className="text-[11px] text-[#9ca3af]">{s.room}</span>
+                  </div>
+                </div>
+
+                <span
+                  className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                  style={{ color: cfg.color, background: cfg.bg }}
+                >
+                  {cfg.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
 
-// ── Main Page 
+// ── Main Page ────────────────────────────────────────────────
 
 export default function HomePage() {
+  const { teachers, loading: teachersLoading } = useTeachers();
+  // const { schedule, loading: scheduleLoading } = useTeacherSchedule();
+  const { classes, loading: classesLoading } = useClasses();
+
   const hour = new Date().getHours();
   const greeting =
     hour < 11 ? "Selamat pagi" : hour < 15 ? "Selamat siang" : hour < 18 ? "Selamat sore" : "Selamat malam";
+
+  // Compute stats from real data
+  const stats = useMemo(() => {
+    const totalTeachers = teachers.length || 0;
+    const totalClasses = classes.length || 0;
+    const totalStudents = classes.reduce((sum, c) => sum + (c.students || 0), 0) || 0;
+    
+    return [
+      { ...INITIAL_STATS[0], value: totalTeachers },
+      { ...INITIAL_STATS[1], value: totalStudents },
+      { ...INITIAL_STATS[2], value: totalClasses },
+      INITIAL_STATS[3],
+    ];
+  }, [teachers, classes]);
+
+  if (teachersLoading || classesLoading /* || scheduleLoading */) {
+    return (
+      <div className="flex items-center justify-center h-full bg-[#F8FAFC]">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw size={32} className="text-[#6C63FF] animate-spin" />
+          <p className="text-[#6b6375]">Memuat dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5 p-6 min-h-full">
@@ -472,7 +476,7 @@ export default function HomePage() {
 
       {/* ── Baris 1: Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATS.map((s, i) => (
+        {stats.map((s, i) => (
           <StatCard key={s.label} stat={s} index={i} />
         ))}
       </div>
@@ -487,12 +491,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── Baris 3: Schedule + Activity */}
+      {/* ── Baris 3: Schedule */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ minHeight: "360px" }}>
         <div className="lg:col-span-2">
-            <ScheduleCard />
+          <ScheduleCard scheduleData={classes} teachersData={teachers} loading={classesLoading} />
         </div>
-        {/* <ActivityCard /> */}
       </div>
 
     </div>

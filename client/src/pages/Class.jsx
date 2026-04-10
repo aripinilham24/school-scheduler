@@ -1,27 +1,19 @@
 import { useState, useMemo } from "react";
-import {
-  Plus, Search, Edit2, Trash2, X, ChevronDown,
-  BookOpen, MapPin, Clock, Users, AlertTriangle,
-  Download, Calendar, Zap, CheckCircle2,
-  MoreVertical, GraduationCap, RefreshCw,
-} from "lucide-react";
+import StatCard from "@/components/layout/StatCard";
+import ClassCard from "@/components/layout/ClassCard";
 import Swal from "sweetalert2";
 import { useClasses } from "@/hooks/useClasses";
+import {
+  Plus, Search, Trash2, X, ChevronDown,
+  BookOpen, MapPin, Clock, Users, AlertTriangle,
+  Download, Calendar, Zap, CheckCircle2, GraduationCap, RefreshCw,
+} from "lucide-react";
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
 const TIME_SLOTS = ["07:00", "08:30", "10:00", "11:30", "13:00", "14:30", "16:00"];
 const ROOMS = ["R-101", "R-102", "R-103", "R-104", "Lab-A", "Lab-B", "Lab-C", "Studio"];
 
-const SUBJECT_COLORS = {
-  "Matematika":       { bg: "bg-blue-50",    text: "text-blue-700",    dot: "bg-blue-500" },
-  "Bahasa Indonesia": { bg: "bg-green-50",   text: "text-green-700",   dot: "bg-green-500" },
-  "Fisika":           { bg: "bg-purple-50",  text: "text-purple-700",  dot: "bg-purple-500" },
-  "Kimia":            { bg: "bg-orange-50",  text: "text-orange-700",  dot: "bg-orange-500" },
-  "Sejarah":          { bg: "bg-yellow-50",  text: "text-yellow-700",  dot: "bg-yellow-500" },
-  "Ekonomi":          { bg: "bg-teal-50",    text: "text-teal-700",    dot: "bg-teal-500" },
-  "Biologi":          { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
-  "Seni":             { bg: "bg-pink-50",    text: "text-pink-700",    dot: "bg-pink-500" },
-};
+
 
 // ─── Schedule Generator ───────────────────────────────────────────────────────
 function generateSchedule(classes) {
@@ -52,85 +44,6 @@ function generateSchedule(classes) {
     }
   }
   return schedule;
-}
-
-// ─── StatCard ─────────────────────────────────────────────────────────────────
-function StatCard({ icon: Icon, label, value, color }) {
-  return (
-    <div className="flex items-center gap-3 bg-white rounded-2xl border border-[#E5E7EB] px-5 py-4 shadow-sm">
-      <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${color}`}>
-        <Icon size={18} className="text-white" />
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-[#08060d] leading-none">{value}</p>
-        <p className="text-xs text-[#9ca3af] mt-0.5">{label}</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── ClassCard ────────────────────────────────────────────────────────────────
-function ClassCard({ cls, onEdit, onDelete, onView }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const color = SUBJECT_COLORS[cls.subject] || { bg: "bg-gray-50", text: "text-gray-700", dot: "bg-gray-400" };
-
-  return (
-    <div
-      className="group bg-white rounded-2xl border border-[#E5E7EB] p-5 hover:border-[#c4c0ff] hover:shadow-[0_4px_20px_rgba(108,99,255,0.1)] transition-all duration-200 cursor-pointer"
-      onClick={() => onView(cls)}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${color.bg} ${color.text}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />
-          {cls.subject}
-        </div>
-        <div className="relative" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center justify-center w-7 h-7 rounded-lg text-[#9ca3af] hover:bg-[#F1F5F9] hover:text-[#08060d] transition-colors opacity-0 group-hover:opacity-100"
-          >
-            <MoreVertical size={14} />
-          </button>
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-8 w-36 bg-white rounded-xl border border-[#E5E7EB] shadow-lg z-20 overflow-hidden">
-                <button
-                  onClick={() => { onEdit(cls); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#6b6375] hover:bg-[#F8FAFC] hover:text-[#08060d] transition-colors"
-                >
-                  <Edit2 size={13} /> Edit
-                </button>
-                <button
-                  onClick={() => { onDelete(cls.id); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#FF4757] hover:bg-[#FFF1F2] transition-colors"
-                >
-                  <Trash2 size={13} /> Hapus
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <h3 className="font-semibold text-[#08060d] text-[15px] leading-snug mb-3 line-clamp-2">{cls.name}</h3>
-
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <MapPin size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{cls.room}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <Clock size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{cls.duration} menit · {cls.sessionsPerWeek}x/minggu</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <Users size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{cls.students} siswa</span>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ─── Modal wrapper ────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
+import { INITIAL_CLASSES } from "@/assets/data";
 
 export function useClasses() {
   const [classes, setClasses] = useState([]);

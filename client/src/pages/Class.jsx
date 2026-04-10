@@ -1,19 +1,38 @@
 import { useState, useMemo } from "react";
 import StatCard from "@/components/layout/StatCard";
 import ClassCard from "@/components/layout/ClassCard";
+import Modal from "@/components/layout/Modal";
+import ClassForm from "@/components/layout/ClassForm";
+import DetailModal from "@/components/layout/DetailModal";
 import Swal from "sweetalert2";
 import { useClasses } from "@/hooks/useClasses";
 import {
-  Plus, Search, Trash2, X, ChevronDown,
-  BookOpen, MapPin, Clock, Users, AlertTriangle,
-  Download, Calendar, Zap, CheckCircle2, GraduationCap, RefreshCw,
+  Plus,
+  Search,
+  Trash2,
+  ChevronDown,
+  BookOpen,
+  MapPin,
+  Clock,
+  AlertTriangle,
+  Download,
+  Calendar,
+  Zap,
+  CheckCircle2,
+  GraduationCap,
+  RefreshCw,
 } from "lucide-react";
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
-const TIME_SLOTS = ["07:00", "08:30", "10:00", "11:30", "13:00", "14:30", "16:00"];
-const ROOMS = ["R-101", "R-102", "R-103", "R-104", "Lab-A", "Lab-B", "Lab-C", "Studio"];
-
-
+const TIME_SLOTS = [
+  "07:00",
+  "08:30",
+  "10:00",
+  "11:30",
+  "13:00",
+  "14:30",
+  "16:00",
+];
 
 // ─── Schedule Generator ───────────────────────────────────────────────────────
 function generateSchedule(classes) {
@@ -26,7 +45,8 @@ function generateSchedule(classes) {
     while (assigned < cls.sessionsPerWeek && attempts < 200) {
       attempts++;
       const day = DAYS[Math.floor(Math.random() * DAYS.length)];
-      const time = TIME_SLOTS[Math.floor(Math.random() * (TIME_SLOTS.length - 1))];
+      const time =
+        TIME_SLOTS[Math.floor(Math.random() * (TIME_SLOTS.length - 1))];
       const key = `${day}-${time}-${cls.room}`;
       const conflict = !!occupied[key];
       occupied[key] = true;
@@ -36,7 +56,8 @@ function generateSchedule(classes) {
         className: cls.name,
         subject: cls.subject,
         room: cls.room,
-        day, time,
+        day,
+        time,
         duration: cls.duration,
         conflict,
       });
@@ -44,164 +65,6 @@ function generateSchedule(classes) {
     }
   }
   return schedule;
-}
-
-// ─── Modal wrapper ────────────────────────────────────────────────────────────
-function Modal({ title, onClose, children }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E5E7EB]">
-          <h2 className="text-base font-semibold text-[#08060d]">{title}</h2>
-          <button
-            onClick={onClose}
-            className="flex items-center justify-center w-8 h-8 rounded-xl text-[#9ca3af] hover:bg-[#F1F5F9] hover:text-[#08060d] transition-colors"
-          >
-            <X size={16} />
-          </button>
-        </div>
-        <div className="px-6 py-5">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Class Form ───────────────────────────────────────────────────────────────
-const FORM_DEFAULTS = { name: "", subject: "", room: "R-101", duration: 90, sessionsPerWeek: 2, students: 20 };
-
-function ClassForm({ initial = FORM_DEFAULTS, onSave, onClose, isEdit }) {
-  const [form, setForm] = useState({ ...FORM_DEFAULTS, ...initial });
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-xs font-medium text-[#6b6375] mb-1.5">Nama Kelas</label>
-        <input
-          value={form.name}
-          onChange={(e) => set("name", e.target.value)}
-          placeholder="cth. Matematika Kelas X"
-          className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#08060d] placeholder:text-[#c4c0cc] focus:outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)] transition-all"
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-[#6b6375] mb-1.5">Mata Pelajaran</label>
-        <input
-          value={form.subject}
-          onChange={(e) => set("subject", e.target.value)}
-          placeholder="cth. Matematika"
-          className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#08060d] placeholder:text-[#c4c0cc] focus:outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)] transition-all"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-[#6b6375] mb-1.5">Ruangan</label>
-          <select
-            value={form.room}
-            onChange={(e) => set("room", e.target.value)}
-            className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#08060d] focus:outline-none focus:border-[#6C63FF] transition-all bg-white"
-          >
-            {ROOMS.map((r) => <option key={r}>{r}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-[#6b6375] mb-1.5">Jumlah Siswa</label>
-          <input
-            type="number" min={1}
-            value={form.students}
-            onChange={(e) => set("students", +e.target.value)}
-            className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#08060d] focus:outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)] transition-all"
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-[#6b6375] mb-1.5">Durasi (menit)</label>
-          <select
-            value={form.duration}
-            onChange={(e) => set("duration", +e.target.value)}
-            className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#08060d] focus:outline-none focus:border-[#6C63FF] transition-all bg-white"
-          >
-            {[45, 60, 90, 120].map((d) => <option key={d}>{d}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-[#6b6375] mb-1.5">Pertemuan/Minggu</label>
-          <select
-            value={form.sessionsPerWeek}
-            onChange={(e) => set("sessionsPerWeek", +e.target.value)}
-            className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#08060d] focus:outline-none focus:border-[#6C63FF] transition-all bg-white"
-          >
-            {[1, 2, 3, 4, 5].map((n) => <option key={n}>{n}x</option>)}
-          </select>
-        </div>
-      </div>
-      <div className="flex gap-2.5 pt-2">
-        <button
-          onClick={onClose}
-          className="flex-1 h-10 rounded-xl border border-[#E5E7EB] text-sm font-medium text-[#6b6375] hover:bg-[#F8FAFC] transition-colors"
-        >
-          Batal
-        </button>
-        <button
-          onClick={() => { if (form.name && form.subject) { onSave(form); onClose(); } }}
-          className="flex-1 h-10 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, #6C63FF, #8A7BFF)" }}
-        >
-          {isEdit ? "Simpan Perubahan" : "Tambah Kelas"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Detail Modal ─────────────────────────────────────────────────────────────
-function DetailModal({ cls, onClose }) {
-  const color = SUBJECT_COLORS[cls.subject] || { bg: "bg-gray-50", text: "text-gray-700", dot: "bg-gray-400" };
-  return (
-    <Modal title="Detail Kelas" onClose={onClose}>
-      <div className="space-y-4">
-        <div className={`flex items-center gap-3 p-4 rounded-2xl ${color.bg}`}>
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/60">
-            <BookOpen size={18} className={color.text} />
-          </div>
-          <div>
-            <p className={`font-semibold text-[15px] ${color.text}`}>{cls.name}</p>
-            <p className={`text-xs ${color.text} opacity-70`}>{cls.subject}</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: MapPin,   label: "Ruangan",    value: cls.room },
-            { icon: Users,    label: "Siswa",      value: `${cls.students} orang` },
-            { icon: Clock,    label: "Durasi",     value: `${cls.duration} menit` },
-            { icon: Calendar, label: "Pertemuan",  value: `${cls.sessionsPerWeek}x / minggu` },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="bg-[#F8FAFC] rounded-xl p-3">
-              <div className="flex items-center gap-1.5 text-[#9ca3af] mb-1">
-                <Icon size={12} />
-                <span className="text-xs">{label}</span>
-              </div>
-              <p className="text-sm font-semibold text-[#08060d]">{value}</p>
-            </div>
-          ))}
-        </div>
-        <div className="bg-[rgba(108,99,255,0.06)] rounded-xl p-3">
-          <p className="text-xs text-[#6b6375]">Total jam per minggu</p>
-          <p className="text-lg font-bold text-[#6C63FF]">
-            {((cls.duration * cls.sessionsPerWeek) / 60).toFixed(1)} jam
-          </p>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-full h-10 rounded-xl border border-[#E5E7EB] text-sm font-medium text-[#6b6375] hover:bg-[#F8FAFC] transition-colors"
-        >
-          Tutup
-        </button>
-      </div>
-    </Modal>
-  );
 }
 
 // ─── Schedule Tab ─────────────────────────────────────────────────────────────
@@ -212,17 +75,27 @@ function ScheduleTab({ schedule, onRegenerate }) {
 
   const conflicts = schedule.filter((s) => s.conflict).length;
 
-  const filtered = useMemo(() => schedule.filter((s) => {
-    const dayOk  = filterDay  === "Semua" || s.day  === filterDay;
-    const roomOk = filterRoom === "Semua" || s.room === filterRoom;
-    const searchOk = !search || s.className.toLowerCase().includes(search.toLowerCase());
-    return dayOk && roomOk && searchOk;
-  }), [schedule, filterDay, filterRoom, search]);
+  const filtered = useMemo(
+    () =>
+      schedule.filter((s) => {
+        const dayOk = filterDay === "Semua" || s.day === filterDay;
+        const roomOk = filterRoom === "Semua" || s.room === filterRoom;
+        const searchOk =
+          !search || s.className.toLowerCase().includes(search.toLowerCase());
+        return dayOk && roomOk && searchOk;
+      }),
+    [schedule, filterDay, filterRoom, search],
+  );
 
   const grouped = useMemo(() => {
     const map = {};
     for (const s of filtered) {
-      if (!map[s.classId]) map[s.classId] = { className: s.className, subject: s.subject, sessions: [] };
+      if (!map[s.classId])
+        map[s.classId] = {
+          className: s.className,
+          subject: s.subject,
+          sessions: [],
+        };
       map[s.classId].sessions.push(s);
     }
     return Object.values(map);
@@ -230,13 +103,17 @@ function ScheduleTab({ schedule, onRegenerate }) {
 
   const handleExport = () => {
     const rows = ["Kelas,Mata Pelajaran,Ruangan,Hari,Jam,Durasi,Status"];
-    schedule.forEach((s) => rows.push(
-      `"${s.className}","${s.subject}","${s.room}","${s.day}","${s.time}","${s.duration} menit","${s.conflict ? "BENTROK" : "OK"}"`
-    ));
+    schedule.forEach((s) =>
+      rows.push(
+        `"${s.className}","${s.subject}","${s.room}","${s.day}","${s.time}","${s.duration} menit","${s.conflict ? "BENTROK" : "OK"}"`,
+      ),
+    );
     const blob = new Blob([rows.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "jadwal-kelas.csv"; a.click();
+    a.href = url;
+    a.download = "jadwal-kelas.csv";
+    a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -247,8 +124,12 @@ function ScheduleTab({ schedule, onRegenerate }) {
           <Calendar size={28} className="text-[#6C63FF]" />
         </div>
         <div className="text-center">
-          <p className="font-semibold text-[#08060d] text-sm">Jadwal belum di-generate</p>
-          <p className="text-xs text-[#9ca3af] mt-1">Klik tombol "Generate Jadwal" di kanan atas untuk mulai</p>
+          <p className="font-semibold text-[#08060d] text-sm">
+            Jadwal belum di-generate
+          </p>
+          <p className="text-xs text-[#9ca3af] mt-1">
+            Klik tombol "Generate Jadwal" di kanan atas untuk mulai
+          </p>
         </div>
       </div>
     );
@@ -260,12 +141,16 @@ function ScheduleTab({ schedule, onRegenerate }) {
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[rgba(108,99,255,0.08)] border border-[rgba(108,99,255,0.2)]">
           <CheckCircle2 size={14} className="text-[#6C63FF]" />
-          <span className="text-xs font-medium text-[#6C63FF]">{schedule.length - conflicts} sesi berhasil</span>
+          <span className="text-xs font-medium text-[#6C63FF]">
+            {schedule.length - conflicts} sesi berhasil
+          </span>
         </div>
         {conflicts > 0 && (
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 border border-red-200">
             <AlertTriangle size={14} className="text-red-500" />
-            <span className="text-xs font-medium text-red-600">{conflicts} bentrok terdeteksi</span>
+            <span className="text-xs font-medium text-red-600">
+              {conflicts} bentrok terdeteksi
+            </span>
           </div>
         )}
         <div className="ml-auto flex items-center gap-2">
@@ -287,7 +172,7 @@ function ScheduleTab({ schedule, onRegenerate }) {
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex items-center h-9 px-3 gap-2 rounded-xl border border-[#E5E7EB] bg-white flex-1 min-w-[160px] max-w-[260px] focus-within:border-[#6C63FF] transition-all">
+        <div className="relative flex items-center h-9 px-3 gap-2 rounded-xl border border-[#E5E7EB] bg-white flex-1 min-w-40 max-w-65 focus-within:border-[#6C63FF] transition-all">
           <Search size={13} className="text-[#9ca3af] shrink-0" />
           <input
             value={search}
@@ -303,9 +188,14 @@ function ScheduleTab({ schedule, onRegenerate }) {
             className="h-9 pl-3 pr-8 rounded-xl border border-[#E5E7EB] text-sm text-[#6b6375] bg-white focus:outline-none focus:border-[#6C63FF] appearance-none cursor-pointer"
           >
             <option value="Semua">Semua Hari</option>
-            {DAYS.map((d) => <option key={d}>{d}</option>)}
+            {DAYS.map((d) => (
+              <option key={d}>{d}</option>
+            ))}
           </select>
-          <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9ca3af] pointer-events-none" />
+          <ChevronDown
+            size={13}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9ca3af] pointer-events-none"
+          />
         </div>
         <div className="relative">
           <select
@@ -314,64 +204,90 @@ function ScheduleTab({ schedule, onRegenerate }) {
             className="h-9 pl-3 pr-8 rounded-xl border border-[#E5E7EB] text-sm text-[#6b6375] bg-white focus:outline-none focus:border-[#6C63FF] appearance-none cursor-pointer"
           >
             <option value="Semua">Semua Ruangan</option>
-            {ROOMS.map((r) => <option key={r}>{r}</option>)}
+            {ROOMS.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
           </select>
-          <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9ca3af] pointer-events-none" />
+          <ChevronDown
+            size={13}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9ca3af] pointer-events-none"
+          />
         </div>
       </div>
 
       {/* Grouped list */}
       <div className="space-y-3">
         {grouped.length === 0 ? (
-          <div className="text-center py-12 text-sm text-[#9ca3af]">Tidak ada jadwal sesuai filter</div>
-        ) : grouped.map((group) => {
-          const color = SUBJECT_COLORS[group.subject] || { bg: "bg-gray-50", text: "text-gray-700", dot: "bg-gray-400" };
-          const hasConflict = group.sessions.some((s) => s.conflict);
-          return (
-            <div key={group.className} className={`bg-white rounded-2xl border overflow-hidden ${hasConflict ? "border-red-200" : "border-[#E5E7EB]"}`}>
-              <div className={`flex items-center gap-3 px-5 py-3 border-b ${color.bg} ${hasConflict ? "border-red-100" : "border-[#E5E7EB]"}`}>
-                <span className={`w-2 h-2 rounded-full ${color.dot}`} />
-                <span className={`text-sm font-semibold ${color.text}`}>{group.className}</span>
-                {hasConflict && (
-                  <span className="flex items-center gap-1 text-[11px] font-semibold text-red-500 ml-1">
-                    <AlertTriangle size={11} /> Ada bentrok
+          <div className="text-center py-12 text-sm text-[#9ca3af]">
+            Tidak ada jadwal sesuai filter
+          </div>
+        ) : (
+          grouped.map((group) => {
+            const color = SUBJECT_COLORS[group.subject] || {
+              bg: "bg-gray-50",
+              text: "text-gray-700",
+              dot: "bg-gray-400",
+            };
+            const hasConflict = group.sessions.some((s) => s.conflict);
+            return (
+              <div
+                key={group.className}
+                className={`bg-white rounded-2xl border overflow-hidden ${hasConflict ? "border-red-200" : "border-[#E5E7EB]"}`}
+              >
+                <div
+                  className={`flex items-center gap-3 px-5 py-3 border-b ${color.bg} ${hasConflict ? "border-red-100" : "border-[#E5E7EB]"}`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${color.dot}`} />
+                  <span className={`text-sm font-semibold ${color.text}`}>
+                    {group.className}
                   </span>
-                )}
-                <span className={`text-xs ${color.text} opacity-60 ml-auto`}>{group.sessions.length} sesi</span>
-              </div>
-              <div className="divide-y divide-[#F1F5F9]">
-                {group.sessions
-                  .sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day))
-                  .map((s) => (
-                    <div
-                      key={s.id}
-                      className={`flex items-center gap-4 px-5 py-3 transition-colors ${s.conflict ? "bg-red-50 hover:bg-red-50" : "hover:bg-[#F8FAFC]"}`}
-                    >
-                      <span className="text-xs font-semibold text-[#08060d] w-16 shrink-0">{s.day}</span>
-                      <div className="flex items-center gap-1.5 text-xs text-[#6b6375] w-20 shrink-0">
-                        <Clock size={11} className="text-[#9ca3af]" />
-                        {s.time}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-[#6b6375] flex-1">
-                        <MapPin size={11} className="text-[#9ca3af]" />
-                        {s.room}
-                      </div>
-                      <span className="text-xs text-[#9ca3af]">{s.duration} mnt</span>
-                      {s.conflict ? (
-                        <span className="flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-100 px-2.5 py-1 rounded-lg">
-                          <AlertTriangle size={11} /> Bentrok
+                  {hasConflict && (
+                    <span className="flex items-center gap-1 text-[11px] font-semibold text-red-500 ml-1">
+                      <AlertTriangle size={11} /> Ada bentrok
+                    </span>
+                  )}
+                  <span className={`text-xs ${color.text} opacity-60 ml-auto`}>
+                    {group.sessions.length} sesi
+                  </span>
+                </div>
+                <div className="divide-y divide-[#F1F5F9]">
+                  {group.sessions
+                    .sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day))
+                    .map((s) => (
+                      <div
+                        key={s.id}
+                        className={`flex items-center gap-4 px-5 py-3 transition-colors ${s.conflict ? "bg-red-50 hover:bg-red-50" : "hover:bg-[#F8FAFC]"}`}
+                      >
+                        <span className="text-xs font-semibold text-[#08060d] w-16 shrink-0">
+                          {s.day}
                         </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                          <CheckCircle2 size={11} /> OK
+                        <div className="flex items-center gap-1.5 text-xs text-[#6b6375] w-20 shrink-0">
+                          <Clock size={11} className="text-[#9ca3af]" />
+                          {s.time}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-[#6b6375] flex-1">
+                          <MapPin size={11} className="text-[#9ca3af]" />
+                          {s.room}
+                        </div>
+                        <span className="text-xs text-[#9ca3af]">
+                          {s.duration} mnt
                         </span>
-                      )}
-                    </div>
-                  ))}
+                        {s.conflict ? (
+                          <span className="flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-100 px-2.5 py-1 rounded-lg">
+                            <AlertTriangle size={11} /> Bentrok
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                            <CheckCircle2 size={11} /> OK
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );
@@ -379,17 +295,19 @@ function ScheduleTab({ schedule, onRegenerate }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ClassPage() {
-  const { classes, loading, error, addClass, updateClass, deleteClass } = useClasses();
+  const { classes, loading, error, addClass, updateClass, deleteClass } =
+    useClasses();
   const [tab, setTab] = useState("classes");
   const [schedule, setSchedule] = useState([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
 
-  const filtered = classes.filter((c) =>
-    !search ||
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    (c.classCode || "").toLowerCase().includes(search.toLowerCase())
+  const filtered = classes.filter(
+    (c) =>
+      !search ||
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      (c.classCode || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleGenerate = () => {
@@ -401,7 +319,12 @@ export default function ClassPage() {
     try {
       await addClass(form);
       setModal(null);
-      Swal.fire({ icon: "success", title: "Berhasil", text: "Kelas baru telah ditambahkan", timer: 1500 });
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Kelas baru telah ditambahkan",
+        timer: 1500,
+      });
     } catch (err) {
       Swal.fire({ icon: "error", title: "Gagal", text: err.message });
     }
@@ -412,7 +335,12 @@ export default function ClassPage() {
       await updateClass(selected.id, form);
       setModal(null);
       setSelected(null);
-      Swal.fire({ icon: "success", title: "Berhasil", text: "Kelas telah diperbarui", timer: 1500 });
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Kelas telah diperbarui",
+        timer: 1500,
+      });
     } catch (err) {
       Swal.fire({ icon: "error", title: "Gagal", text: err.message });
     }
@@ -423,14 +351,25 @@ export default function ClassPage() {
       await deleteClass(id);
       setModal(null);
       setSelected(null);
-      Swal.fire({ icon: "success", title: "Berhasil", text: "Kelas telah dihapus", timer: 1500 });
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Kelas telah dihapus",
+        timer: 1500,
+      });
     } catch (err) {
       Swal.fire({ icon: "error", title: "Gagal", text: err.message });
     }
   };
 
-  const totalSessions = classes.reduce((a, c) => a + (c.sessionsPerWeek || 0), 0);
-  const totalHours = classes.reduce((a, c) => a + ((c.duration || 0) * (c.sessionsPerWeek || 0)) / 60, 0);
+  const totalSessions = classes.reduce(
+    (a, c) => a + (c.sessionsPerWeek || 0),
+    0,
+  );
+  const totalHours = classes.reduce(
+    (a, c) => a + ((c.duration || 0) * (c.sessionsPerWeek || 0)) / 60,
+    0,
+  );
   const conflicts = schedule.filter((s) => s.conflict).length;
 
   if (loading) {
@@ -446,13 +385,16 @@ export default function ClassPage() {
 
   return (
     <div className="flex flex-col h-full bg-[#F8FAFC] overflow-hidden">
-
       {/* ── Header ── */}
       <div className="shrink-0 px-8 pt-7 pb-5 bg-white border-b border-[#E5E7EB]">
         <div className="flex items-start justify-between mb-5">
           <div>
-            <h1 className="text-2xl font-bold text-[#08060d] tracking-tight">Manajemen Kelas</h1>
-            <p className="text-sm text-[#9ca3af] mt-0.5">Kelola kelas dan generate jadwal otomatis tanpa bentrok</p>
+            <h1 className="text-2xl font-bold text-[#08060d] tracking-tight">
+              Manajemen Kelas
+            </h1>
+            <p className="text-sm text-[#9ca3af] mt-0.5">
+              Kelola kelas dan generate jadwal otomatis tanpa bentrok
+            </p>
           </div>
           <button
             onClick={handleGenerate}
@@ -466,17 +408,37 @@ export default function ClassPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-3 mb-5">
-          <StatCard icon={BookOpen}      label="Total Kelas"    value={classes.length}              color="bg-[#6C63FF]" />
-          <StatCard icon={Calendar}      label="Sesi / Minggu"  value={totalSessions}               color="bg-[#10B981]" />
-          <StatCard icon={Clock}         label="Jam / Minggu"   value={`${totalHours.toFixed(0)}j`} color="bg-[#F59E0B]" />
-          <StatCard icon={AlertTriangle} label="Bentrok Jadwal" value={conflicts}                   color={conflicts > 0 ? "bg-[#FF4757]" : "bg-[#9ca3af]"} />
+          <StatCard
+            icon={BookOpen}
+            label="Total Kelas"
+            value={classes.length}
+            color="bg-[#6C63FF]"
+          />
+          <StatCard
+            icon={Calendar}
+            label="Sesi / Minggu"
+            value={totalSessions}
+            color="bg-[#10B981]"
+          />
+          <StatCard
+            icon={Clock}
+            label="Jam / Minggu"
+            value={`${totalHours.toFixed(0)}j`}
+            color="bg-[#F59E0B]"
+          />
+          <StatCard
+            icon={AlertTriangle}
+            label="Bentrok Jadwal"
+            value={conflicts}
+            color={conflicts > 0 ? "bg-[#FF4757]" : "bg-[#9ca3af]"}
+          />
         </div>
 
         {/* Tabs */}
         <div className="flex items-center gap-1 bg-[#F1F5F9] rounded-xl p-1 w-fit">
           {[
-            { key: "classes",  label: "Daftar Kelas", icon: GraduationCap },
-            { key: "schedule", label: "Jadwal",        icon: Calendar },
+            { key: "classes", label: "Daftar Kelas", icon: GraduationCap },
+            { key: "schedule", label: "Jadwal", icon: Calendar },
           ].map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -516,7 +478,9 @@ export default function ClassPage() {
               <button
                 onClick={() => setModal("add")}
                 className="flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.01]"
-                style={{ background: "linear-gradient(135deg,#6C63FF,#8A7BFF)" }}
+                style={{
+                  background: "linear-gradient(135deg,#6C63FF,#8A7BFF)",
+                }}
               >
                 <Plus size={15} /> Tambah Kelas
               </button>
@@ -527,8 +491,12 @@ export default function ClassPage() {
                 <div className="w-14 h-14 rounded-2xl bg-[rgba(108,99,255,0.08)] flex items-center justify-center">
                   <BookOpen size={24} className="text-[#6C63FF]" />
                 </div>
-                <p className="text-sm font-medium text-[#08060d]">Tidak ada kelas ditemukan</p>
-                <p className="text-xs text-[#9ca3af]">Coba kata kunci lain atau tambah kelas baru</p>
+                <p className="text-sm font-medium text-[#08060d]">
+                  Tidak ada kelas ditemukan
+                </p>
+                <p className="text-xs text-[#9ca3af]">
+                  Coba kata kunci lain atau tambah kelas baru
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
@@ -536,9 +504,18 @@ export default function ClassPage() {
                   <ClassCard
                     key={cls.id}
                     cls={cls}
-                    onEdit={(c) => { setSelected(c); setModal("edit"); }}
-                    onDelete={(id) => { setSelected({ id }); setModal("delete"); }}
-                    onView={(c) => { setSelected(c); setModal("detail"); }}
+                    onEdit={(c) => {
+                      setSelected(c);
+                      setModal("edit");
+                    }}
+                    onDelete={(id) => {
+                      setSelected({ id });
+                      setModal("delete");
+                    }}
+                    onView={(c) => {
+                      setSelected(c);
+                      setModal("detail");
+                    }}
                   />
                 ))}
               </div>
@@ -552,12 +529,21 @@ export default function ClassPage() {
       {/* ── Modals ── */}
       {modal === "add" && (
         <Modal title="Tambah Kelas Baru" onClose={() => setModal(null)}>
-          <ClassForm onSave={handleAdd} onClose={() => setModal(null)} isEdit={false} />
+          <ClassForm
+            onSave={handleAdd}
+            onClose={() => setModal(null)}
+            isEdit={false}
+          />
         </Modal>
       )}
       {modal === "edit" && selected && (
         <Modal title="Edit Kelas" onClose={() => setModal(null)}>
-          <ClassForm initial={selected} onSave={handleEdit} onClose={() => setModal(null)} isEdit />
+          <ClassForm
+            initial={selected}
+            onSave={handleEdit}
+            onClose={() => setModal(null)}
+            isEdit
+          />
         </Modal>
       )}
       {modal === "detail" && selected && (
@@ -570,7 +556,9 @@ export default function ClassPage() {
               <Trash2 size={22} className="text-red-500" />
             </div>
             <p className="text-sm text-[#6b6375] text-center leading-relaxed">
-              Apakah kamu yakin ingin menghapus kelas ini?<br />Tindakan ini tidak dapat dibatalkan.
+              Apakah kamu yakin ingin menghapus kelas ini?
+              <br />
+              Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex gap-2.5">
               <button
@@ -580,7 +568,10 @@ export default function ClassPage() {
                 Batal
               </button>
               <button
-                onClick={() => { handleDelete(selected.id); setModal(null); }}
+                onClick={() => {
+                  handleDelete(selected.id);
+                  setModal(null);
+                }}
                 className="flex-1 h-10 rounded-xl bg-[#FF4757] text-white text-sm font-semibold hover:bg-[#e03546] transition-colors"
               >
                 Hapus

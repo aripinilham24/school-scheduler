@@ -1,72 +1,29 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
-  Search,
   Trash2,
-  X,
-  ChevronDown,
   BookOpen,
-  MapPin,
   Clock,
-  Users,
   AlertTriangle,
-  Download,
   Calendar,
   Zap,
-  CheckCircle2,
-  RefreshCw,
 } from "lucide-react";
 import { INITIAL_CLASSES, DAYS, TIME_SLOTS } from "@/assets/data";
 import StatCard from "@/components/layout/StatCard";
 import Modal from "@/components/layout/Modal";
 import DetailModal from "@/components/layout/DetailModal";
 import ScheduleTab from "@/components/layout/ScheduleTab";
-
-// ─── Schedule Generator ───────────────────────────────────────────────────────
-function generateSchedule(classes) {
-  const schedule = [];
-  const occupied = {};
-
-  for (const cls of classes) {
-    let assigned = 0;
-    let attempts = 0;
-    while (assigned < cls.sessionsPerWeek && attempts < 200) {
-      attempts++;
-      const day = DAYS[Math.floor(Math.random() * DAYS.length)];
-      const time =
-        TIME_SLOTS[Math.floor(Math.random() * (TIME_SLOTS.length - 1))];
-      const key = `${day}-${time}-${cls.room}`;
-      const conflict = !!occupied[key];
-      occupied[key] = true;
-      schedule.push({
-        id: `${cls.id}-${assigned}`,
-        classId: cls.id,
-        className: cls.name,
-        subject: cls.subject,
-        room: cls.room,
-        day,
-        time,
-        duration: cls.duration,
-        conflict,
-      });
-      assigned++;
-    }
-  }
-  return schedule;
-}
-
-
-
-
-// ─── Schedule Tab ─────────────────────────────────────────────────────────────
+import { generateSchedule } from "@/utils/generateSchedule";
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Schedule() {
   const [classes, setClasses] = useState(INITIAL_CLASSES);
   const [schedule, setSchedule] = useState([]);
   const [modal, setModal] = useState(null);
+  const days = DAYS;
+  const timeSlots = TIME_SLOTS;
 
   const handleGenerate = () => {
-    setSchedule(generateSchedule(classes));
+    setSchedule(generateSchedule(classes, days, timeSlots));
   };
 
   const handleAdd = (form) =>

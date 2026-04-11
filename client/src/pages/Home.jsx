@@ -14,45 +14,9 @@ import {
 import { useClasses } from "@/hooks/useClasses";
 import { useTeachers } from "@/hooks/useTeachers";
 import { INITIAL_STATS, ANNOUNCEMENTS } from "@/assets/data";
+import StatCard from "@/components/layout/StatCard";
 
 // ── Sub Components ───────────────────────────────────────────
-
-function StatCard({ stat, index }) {
-  const isUp = stat.trend >= 0;
-  return (
-    <div
-      className="bg-white rounded-2xl border border-[#E5E7EB] p-5 flex flex-col gap-4 hover:shadow-[0_8px_24px_rgba(108,99,255,0.1)] transition-all duration-300 hover:-translate-y-0.5"
-      style={{ animationDelay: `${index * 60}ms` }}
-    >
-      <div className="flex items-center justify-between">
-        <div
-          className="flex items-center justify-center w-11 h-11 rounded-xl"
-          style={{ background: stat.bg }}
-        >
-          <stat.icon size={20} style={{ color: stat.color }} strokeWidth={2} />
-        </div>
-        <span
-          className="flex items-center gap-1 text-[12px] font-semibold px-2 py-1 rounded-lg"
-          style={{
-            color: isUp ? "#059669" : "#E11D48",
-            background: isUp ? "rgba(52,211,153,0.1)" : "rgba(225,29,72,0.08)",
-          }}
-        >
-          {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-          {isUp ? "+" : ""}
-          {stat.trend}
-        </span>
-      </div>
-      <div>
-        <p className="text-[26px] font-bold text-[#08060d] leading-none tracking-tight">
-          {stat.value.toLocaleString()}
-        </p>
-        <p className="text-[13px] text-[#6b6375] mt-1.5">{stat.label}</p>
-        <p className="text-[11px] text-[#9ca3af] mt-0.5">{stat.trendLabel}</p>
-      </div>
-    </div>
-  );
-}
 
 function AttendanceChart() {
   // Generate attendance data for this week
@@ -324,7 +288,7 @@ function ScheduleCard({ scheduleData, teachersData, loading }) {
                   background: isOngoing ? `${s.color}05` : undefined,
                 }}
               >
-                <div className="flex flex-col items-center shrink-0 w-[46px] gap-0.5">
+                <div className="flex flex-col items-center shrink-0 w-11.5 gap-0.5">
                   <span className="text-[12px] font-bold text-[#08060d]">
                     {s.start}
                   </span>
@@ -333,7 +297,7 @@ function ScheduleCard({ scheduleData, teachersData, loading }) {
                 </div>
 
                 <div
-                  className="w-[3px] h-10 rounded-full shrink-0"
+                  className="w-0.75 h-10 rounded-full shrink-0"
                   style={{ background: s.color }}
                 />
 

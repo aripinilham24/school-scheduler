@@ -14,6 +14,7 @@ import DetailModal from "@/components/layout/DetailModal";
 import ScheduleTab from "@/components/layout/ScheduleTab";
 import { generateSchedule } from "@/utils/generateSchedule";
 
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Schedule() {
   const [classes, setClasses] = useState(INITIAL_CLASSES);

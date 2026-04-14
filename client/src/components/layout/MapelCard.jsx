@@ -1,38 +1,12 @@
 import { useState } from "react";
 import { getStatusClasses } from "@/utils/getStatusCLasses";
 import { MoreVertical, Edit2, Trash2, GraduationCap, Code, BookOpen, Clock } from "lucide-react";
+import { SUBJECT_COLORS_MAPEL } from "@/assets/data";
 
-const SUBJECT_COLORS = [
-  {
-    bg: "bg-[rgba(108,99,255,0.12)]",
-    text: "text-[#534AB7]",
-    dot: "bg-[#6C63FF]",
-  },
-  {
-    bg: "bg-[rgba(29,158,117,0.12)]",
-    text: "text-[#0F6E56]",
-    dot: "bg-[#10B981]",
-  },
-  {
-    bg: "bg-[rgba(216,90,48,0.12)]",
-    text: "text-[#993C1D]",
-    dot: "bg-[#F97316]",
-  },
-  {
-    bg: "bg-[rgba(212,83,126,0.12)]",
-    text: "text-[#993556]",
-    dot: "bg-[#EC4899]",
-  },
-  {
-    bg: "bg-[rgba(59,130,246,0.12)]",
-    text: "text-[#1E40AF]",
-    dot: "bg-[#3B82F6]",
-  },
-];
 
 export function MapelCard({ mapel, index, onEdit, onDelete, onView }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const c = SUBJECT_COLORS[index % SUBJECT_COLORS.length];
+  const c = SUBJECT_COLORS_MAPEL[index % SUBJECT_COLORS_MAPEL.length];
 
   return (
     <div

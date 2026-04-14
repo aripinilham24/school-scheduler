@@ -152,9 +152,57 @@ export const TIME_SLOTS = [
 export const AVATAR_COLORS = [
   { bg: "bg-[rgba(108,99,255,0.12)]", text: "text-[#534AB7]" },
   { bg: "bg-[rgba(29,158,117,0.12)]", text: "text-[#0F6E56]" },
-  { bg: "bg-[rgba(216,90,48,0.12)]",  text: "text-[#993C1D]" },
+  { bg: "bg-[rgba(216,90,48,0.12)]", text: "text-[#993C1D]" },
   { bg: "bg-[rgba(212,83,126,0.12)]", text: "text-[#993556]" },
 ];
 
+import { AlertTriangle, Bell, Info } from "lucide-react";
+export const SUBJECT_COLORS_MAPEL = [
+  {
+    bg: "bg-[rgba(108,99,255,0.12)]",
+    text: "text-[#534AB7]",
+    dot: "bg-[#6C63FF]",
+  },
+  {
+    bg: "bg-[rgba(29,158,117,0.12)]",
+    text: "text-[#0F6E56]",
+    dot: "bg-[#10B981]",
+  },
+  {
+    bg: "bg-[rgba(216,90,48,0.12)]",
+    text: "text-[#993C1D]",
+    dot: "bg-[#F97316]",
+  },
+  {
+    bg: "bg-[rgba(212,83,126,0.12)]",
+    text: "text-[#993556]",
+    dot: "bg-[#EC4899]",
+  },
+  {
+    bg: "bg-[rgba(59,130,246,0.12)]",
+    text: "text-[#1E40AF]",
+    dot: "bg-[#3B82F6]",
+  },
+];
+export const PRIORITY_CONFIG = {
+  high: {
+    icon: AlertTriangle,
+    color: "#E11D48",
+    bg: "rgba(225,29,72,0.08)",
+    label: "Penting",
+  },
+  medium: {
+    icon: Bell,
+    color: "#D97706",
+    bg: "rgba(217,119,6,0.08)",
+    label: "Sedang",
+  },
+  info: {
+    icon: Info,
+    color: "#2563EB",
+    bg: "rgba(37,99,235,0.08)",
+    label: "Info",
+  },
+};
 export { default as ROOMS } from "./roomData";
 export { default as SUBJECT_COLORS } from "./colorData";

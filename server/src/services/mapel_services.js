@@ -1,7 +1,7 @@
 import admin from "firebase-admin";
 import db from "../lib/firestore.js";
 
-const mapelCollection = db.collection("mapel");
+const mapelCollection = db.collection("subjects");
 
 // Standarisasi Input dan Validasi
 function normalizeMapelInput(raw) {
@@ -51,13 +51,17 @@ export async function listMapel({ search = "", level, status } = {}) {
   if (level) query = query.where("level", "==", level);
   if (status) query = query.where("status", "==", status);
 
-  query = query.orderBy("createdAt", "desc");
-
   const snapshot = await query.get();
   const items = [];
   snapshot.forEach((doc) => {
     items.push({ id: doc.id, ...doc.data() });
   });
+
+  items.sort((a, b) => {
+		const timeA = a.createdAt?.toDate?.().getTime() ?? 0;
+		const timeB = b.createdAt?.toDate?.().getTime() ?? 0;
+		return timeB - timeA;
+	});
 
   if (search) {
     const lcSearch = search.toString().trim().toLowerCase();

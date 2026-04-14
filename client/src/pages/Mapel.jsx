@@ -2,25 +2,33 @@ import { useState, useMemo } from "react";
 import {
   Plus,
   Search,
-  Edit2,
-  Trash2,
-  X,
+  RefreshCw,
+  AlertCircle,
   BookOpen,
   Users,
   Clock,
-  Code,
-  MoreVertical,
   GraduationCap,
-  RefreshCw,
-  AlertCircle,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useMapel } from "@/hooks/useMapel";
 import StatCard from "@/components/layout/StatCard";
 import { MapelCard } from "@/components/layout/MapelCard";
-import { SkeletonCard } from "@/components/layout/SkeletonCard";
 import { EmptyState } from "@/components/layout/EmptyState";
 import DetailModal from "@/components/layout/DetailModal";
+import Modal from "@/components/layout/Modal";
+
+const INITIAL_FORM_STATE = {
+  name: "",
+  code: "",
+  teacher: "",
+  level: "",
+  description: "",
+  credits: "",
+  hours: "",
+  status: "Active",
+};
+
+const statusOptions = ["Active", "Inactive", "On Leave"];
 
 export default function MapelPage() {
   const { mapel, loading, error, addMapel, updateMapel, deleteMapel } =
@@ -28,6 +36,7 @@ export default function MapelPage() {
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return mapel;
@@ -39,6 +48,60 @@ export default function MapelPage() {
         (m.teacher || "").toLowerCase().includes(lcSearch),
     );
   }, [mapel, search]);
+
+  const openAddModal = () => {
+    setSelected(null);
+    setFormData(INITIAL_FORM_STATE);
+    setModal("add");
+  };
+
+  const openEditModal = (mapelItem) => {
+    setSelected(mapelItem);
+    setFormData({
+      name: mapelItem.name || "",
+      code: mapelItem.code || "",
+      teacher: mapelItem.teacher || "",
+      level: mapelItem.level || "",
+      description: mapelItem.description || "",
+      credits: mapelItem.credits != null ? String(mapelItem.credits) : "",
+      hours: mapelItem.hours != null ? String(mapelItem.hours) : "",
+      status: mapelItem.status || "Active",
+    });
+    setModal("edit");
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+
+    const payload = {
+      ...formData,
+      credits: Number(formData.credits),
+      hours: Number(formData.hours),
+    };
+
+    try {
+      if (modal === "add") {
+        await addMapel(payload);
+        Swal.fire({ icon: "success", title: "Berhasil", text: "Mapel berhasil ditambahkan", timer: 1500 });
+      } else if (modal === "edit" && selected?.id) {
+        await updateMapel(selected.id, payload);
+        Swal.fire({ icon: "success", title: "Berhasil", text: "Mapel berhasil diperbarui", timer: 1500 });
+      }
+      setModal(null);
+      setSelected(null);
+      setFormData(INITIAL_FORM_STATE);
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Gagal", text: err.message || "Terjadi kesalahan" });
+    }
+  };
 
   const handleDelete = async (m) => {
     const result = await Swal.fire({
@@ -55,14 +118,9 @@ export default function MapelPage() {
     if (result.isConfirmed) {
       try {
         await deleteMapel(m.id);
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil",
-          text: "Mapel berhasil dihapus",
-          timer: 1500,
-        });
+        Swal.fire({ icon: "success", title: "Berhasil", text: "Mapel berhasil dihapus", timer: 1500 });
       } catch (err) {
-        Swal.fire({ icon: "error", title: "Gagal", text: err.message });
+        Swal.fire({ icon: "error", title: "Gagal", text: err.message || "Terjadi kesalahan" });
       }
     }
   };
@@ -123,7 +181,7 @@ export default function MapelPage() {
             </p>
           </div>
           <button
-            onClick={() => setModal("add")}
+            onClick={openAddModal}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-[0_4px_14px_rgba(108,99,255,0.4)] hover:shadow-[0_4px_20px_rgba(108,99,255,0.5)] hover:scale-[1.02] transition-all duration-200"
             style={{ background: "linear-gradient(135deg, #6C63FF, #8A7BFF)" }}
           >
@@ -181,13 +239,10 @@ export default function MapelPage() {
                 key={m.id}
                 mapel={m}
                 index={idx}
-                onEdit={() => {
-                  setSelected(m);
-                  setModal("edit");
-                }}
-                onDelete={() => handleDelete(m)}
-                onView={() => {
-                  setSelected(m);
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+                onView={(item) => {
+                  setSelected(item);
                   setModal("detail");
                 }}
               />
@@ -197,6 +252,132 @@ export default function MapelPage() {
       </div>
 
       {/* Modals */}
+      {(modal === "add" || modal === "edit") && (
+        <Modal
+          title={modal === "add" ? "Tambah Mata Pelajaran" : "Edit Mata Pelajaran"}
+          onClose={() => {
+            setModal(null);
+            setSelected(null);
+          }}
+        >
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-sm font-medium text-[#475569]">Nama Mapel</span>
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+                  required
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-[#475569]">Kode Mapel</span>
+                <input
+                  name="code"
+                  value={formData.code}
+                  onChange={handleInputChange}
+                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+                  required
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-[#475569]">Guru</span>
+                <input
+                  name="teacher"
+                  value={formData.teacher}
+                  onChange={handleInputChange}
+                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+                  required
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-[#475569]">Level</span>
+                <input
+                  name="level"
+                  value={formData.level}
+                  onChange={handleInputChange}
+                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+                  required
+                />
+              </label>
+            </div>
+
+            <label className="block">
+              <span className="text-sm font-medium text-[#475569]">Deskripsi</span>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={3}
+                className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+              />
+            </label>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-sm font-medium text-[#475569]">SKS</span>
+                <input
+                  name="credits"
+                  type="number"
+                  min="0"
+                  value={formData.credits}
+                  onChange={handleInputChange}
+                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-[#475569]">Jam</span>
+                <input
+                  name="hours"
+                  type="number"
+                  min="0"
+                  value={formData.hours}
+                  onChange={handleInputChange}
+                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+                />
+              </label>
+            </div>
+
+            <label className="block">
+              <span className="text-sm font-medium text-[#475569]">Status</span>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+                className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+              >
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setModal(null);
+                  setSelected(null);
+                }}
+                className="rounded-2xl border border-[#E5E7EB] px-4 py-2 text-sm font-medium text-[#6b6375] hover:bg-[#F8FAFC]"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="rounded-2xl bg-[#6C63FF] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                {modal === "add" ? "Tambah" : "Simpan"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
       {modal === "detail" && selected && (
         <DetailModal
           mapel={selected}

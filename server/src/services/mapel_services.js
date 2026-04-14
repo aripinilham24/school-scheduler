@@ -1,7 +1,7 @@
 import admin from "firebase-admin";
 import db from "../lib/firestore.js";
 
-const mapelCollection = db.collection("mapel");
+const mapelCollection = db.collection("subjects");
 
 // Standarisasi Input dan Validasi
 function normalizeMapelInput(raw) {

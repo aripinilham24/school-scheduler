@@ -44,7 +44,7 @@ function validateMapelPayload(payload, { requireAllFields = false } = {}) {
 }
 
 
-// List Mapel dengan filter pencarian
+// List Mapel dengan filter pencarian dan join teacher info
 export async function listMapel({ search = "", level, status } = {}) {
   let query = mapelCollection;
 
@@ -63,6 +63,44 @@ export async function listMapel({ search = "", level, status } = {}) {
 		return timeB - timeA;
 	});
 
+	// Join dengan assignments untuk mendapatkan nama guru
+	if (items.length > 0) {
+		try {
+			const assignmentsSnap = await db.collection("assignments").get();
+			const assignments = assignmentsSnap.docs.map((d) => d.data());
+
+			// Ambil teacher IDs dan fetch teacher names
+			const teacherIds = new Set();
+			assignments.forEach((a) => {
+				if (a.teacherId) teacherIds.add(a.teacherId);
+			});
+
+			const teacherMap = new Map();
+			if (teacherIds.size > 0) {
+				const teachersSnap = await db.collection("teachers").get();
+				teachersSnap.docs.forEach((doc) => {
+					teacherMap.set(doc.id, doc.data().name || "Unknown");
+				});
+			}
+
+			// Join mapel dengan teacher dari assignments
+			items.forEach((item) => {
+				const assignment = assignments.find((a) => a.subjectId === item.id);
+				if (assignment && teacherMap.has(assignment.teacherId)) {
+					item.teacher = teacherMap.get(assignment.teacherId);
+				} else {
+					item.teacher = item.teacher || "-";
+				}
+			});
+		} catch (err) {
+			console.error("Error joining teacher info:", err);
+			// Jika join gagal, gunakan field teacher yang ada atau default "-"
+			items.forEach((item) => {
+				item.teacher = item.teacher || "-";
+			});
+		}
+	}
+
   if (search) {
     const lcSearch = search.toString().trim().toLowerCase();
     return items.filter((item) =>
@@ -75,12 +113,39 @@ export async function listMapel({ search = "", level, status } = {}) {
   return items;
 }
 
-// Mengambil data mapel berdasarkan ID
+// Mengambil data mapel berdasarkan ID dengan guru info
 export async function getMapelById(id) {
   if (!id) throw new Error("ID mapel tidak valid");
   const doc = await mapelCollection.doc(id).get();
   if (!doc.exists) return null;
-  return { id: doc.id, ...doc.data() };
+
+  const mapel = { id: doc.id, ...doc.data() };
+
+	// Join dengan guru dari assignments
+	try {
+		const assignmentsSnap = await db
+			.collection("assignments")
+			.where("subjectId", "==", id)
+			.get();
+
+		if (!assignmentsSnap.empty) {
+			const assignment = assignmentsSnap.docs[0].data();
+			if (assignment.teacherId) {
+				const teacherDoc = await db
+					.collection("teachers")
+					.doc(assignment.teacherId)
+					.get();
+				if (teacherDoc.exists) {
+					mapel.teacher = teacherDoc.data().name || "-";
+				}
+			}
+		}
+	} catch (err) {
+		console.error("Error joining teacher info:", err);
+	}
+
+	mapel.teacher = mapel.teacher || "-";
+	return mapel;
 }
 
 // Tambah Mapel

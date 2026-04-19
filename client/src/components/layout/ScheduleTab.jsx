@@ -184,9 +184,14 @@ export default function ScheduleTab({ schedule, onRegenerate }) {
                   className={`flex items-center gap-3 px-5 py-3 border-b ${color.bg} ${hasConflict ? "border-red-100" : "border-[#E5E7EB]"}`}
                 >
                   <span className={`w-2 h-2 rounded-full ${color.dot}`} />
-                  <span className={`text-sm font-semibold ${color.text}`}>
-                    {group.className}
-                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className={`text-sm font-semibold ${color.text}`}>
+                      {group.className}
+                    </span>
+                    <span className={`text-xs ${color.text} opacity-75`}>
+                      {group.subject}
+                    </span>
+                  </div>
                   {hasConflict && (
                     <span className="flex items-center gap-1 text-[11px] font-semibold text-red-500 ml-1">
                       <AlertTriangle size={11} /> Ada bentrok
@@ -210,6 +215,9 @@ export default function ScheduleTab({ schedule, onRegenerate }) {
                         <div className="flex items-center gap-1.5 text-xs text-[#6b6375] w-20 shrink-0">
                           <Clock size={11} className="text-[#9ca3af]" />
                           {s.time}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#08060d] w-24 shrink-0">
+                          {s.subject}
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-[#6b6375] flex-1">
                           <MapPin size={11} className="text-[#9ca3af]" />

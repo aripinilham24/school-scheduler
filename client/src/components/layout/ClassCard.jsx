@@ -1,17 +1,32 @@
 import { useState } from "react";
-import SUBJECT_COLORS from "@/assets/data/colorData";
 import {
   Edit2,
   Trash2,
   MapPin,
-  Clock,
   Users,
   MoreVertical,
+  BookOpen,
 } from "lucide-react";
+
+const gradeNames = {
+  10: "Kelas X",
+  11: "Kelas XI",
+  12: "Kelas XII",
+};
+
+const majorColors = {
+  IPA: { bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-400" },
+  IPS: { bg: "bg-purple-50", text: "text-purple-700", dot: "bg-purple-400" },
+  Bahasa: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-400" },
+  Teknologi: { bg: "bg-orange-50", text: "text-orange-700", dot: "bg-orange-400" },
+};
 
 export default function ClassCard({ cls, onEdit, onDelete, onView }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const color = SUBJECT_COLORS[cls.subject] || {
+  
+  const gradeLabel = gradeNames[cls.grade] || `Grade ${cls.grade}`;
+  const majorLabel = cls.major || "Umum";
+  const color = majorColors[cls.major] || {
     bg: "bg-gray-50",
     text: "text-gray-700",
     dot: "bg-gray-400",
@@ -27,7 +42,7 @@ export default function ClassCard({ cls, onEdit, onDelete, onView }) {
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${color.bg} ${color.text}`}
         >
           <span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />
-          {cls.subject}
+          {majorLabel}
         </div>
         <div className="relative" onClick={(e) => e.stopPropagation()}>
           <button
@@ -67,25 +82,31 @@ export default function ClassCard({ cls, onEdit, onDelete, onView }) {
         </div>
       </div>
 
-      <h3 className="font-semibold text-[#08060d] text-[15px] leading-snug mb-3 line-clamp-2">
+      <h3 className="font-semibold text-[#08060d] text-[15px] leading-snug mb-1 line-clamp-2">
         {cls.name}
       </h3>
+      
+      <p className="text-xs text-[#9ca3af] mb-3">
+        {gradeLabel} · {cls.code}
+      </p>
 
       <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <MapPin size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{cls.room}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <Clock size={12} className="text-[#9ca3af] shrink-0" />
-          <span>
-            {cls.duration} menit · {cls.sessionsPerWeek}x/minggu
-          </span>
-        </div>
+        {cls.room && (
+          <div className="flex items-center gap-2 text-xs text-[#6b6375]">
+            <MapPin size={12} className="text-[#9ca3af] shrink-0" />
+            <span>{cls.room}</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 text-xs text-[#6b6375]">
           <Users size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{cls.students} siswa</span>
+          <span>{cls.students || 0} / {cls.capacity || 40} siswa</span>
         </div>
+        {cls.description && (
+          <div className="flex items-start gap-2 text-xs text-[#6b6375]">
+            <BookOpen size={12} className="text-[#9ca3af] shrink-0 mt-0.5" />
+            <span className="line-clamp-2">{cls.description}</span>
+          </div>
+        )}
       </div>
     </div>
   );

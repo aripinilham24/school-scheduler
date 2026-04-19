@@ -8,6 +8,7 @@ router.get("/:id", schedulesController.getById);
 router.post("/", schedulesController.create);
 router.post("/generate", schedulesController.generate);
 router.put("/:id", schedulesController.update);
+router.delete("/", schedulesController.removeAll);
 router.delete("/:id", schedulesController.remove);
 
 export default router;

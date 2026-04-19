@@ -128,6 +128,26 @@ export async function deleteSchedule(id) {
   return true;
 }
 
+// Hapus Semua Jadwal
+export async function deleteAllSchedules() {
+  const existing = await schedulesCollection.get();
+  if (existing.empty) {
+    return 0;
+  }
+  
+  const CHUNK = 400;
+  let deleted = 0;
+  for (let i = 0; i < existing.docs.length; i += CHUNK) {
+    const batch = db.batch();
+    existing.docs.slice(i, i + CHUNK).forEach((doc) => {
+      batch.delete(doc.ref);
+      deleted++;
+    });
+    await batch.commit();
+  }
+  return deleted;
+}
+
 // Generate Jadwal Otomatis
 export async function generateSchedules({ clearExisting = true } = {}) {
   // 1. Ambil semua data secara paralel
@@ -208,11 +228,17 @@ export async function generateSchedules({ clearExisting = true } = {}) {
 
   // 5. Simpan jadwal baru (batch write)
   const CHUNK = 400;
+  const subjectMap = {};
+  subjects.forEach((s) => {
+    subjectMap[s.id] = s.name;
+  });
+
   for (let i = 0; i < schedules.length; i += CHUNK) {
     const batch = db.batch();
     schedules.slice(i, i + CHUNK).forEach((s) => {
       batch.set(schedulesCollection.doc(), {
         ...s,
+        subject: s.subjectName || subjectMap[s.subjectId] || "Unknown",
         createdAt: new Date(),
       });
     });

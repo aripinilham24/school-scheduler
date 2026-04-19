@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { getStatusClasses } from "@/utils/getStatusCLasses";
 import { MoreVertical, Edit2, Trash2, GraduationCap, Code, BookOpen, Clock } from "lucide-react";
 import { SUBJECT_COLORS_MAPEL } from "@/assets/data";
 
@@ -65,28 +64,10 @@ export function MapelCard({ mapel, index, onEdit, onDelete, onView }) {
         </div>
       </div>
 
-      <span
-        className={`inline-flex items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-semibold mb-4 ${getStatusClasses(mapel.status)}`}
-      >
-        {mapel.status ?? "Unknown"}
-      </span>
-
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-[#6b6375]">
           <GraduationCap size={12} className="text-[#9ca3af] shrink-0" />
           <span className="font-medium">Guru: {mapel.teacher ?? "-"}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <Code size={12} className="text-[#9ca3af] shrink-0" />
-          <span>Level: {mapel.level ?? "-"}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <BookOpen size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{mapel.credits ?? 0} SKS</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <Clock size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{mapel.hours ?? 0} jam</span>
         </div>
       </div>
     </div>

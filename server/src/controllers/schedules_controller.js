@@ -62,28 +62,45 @@ export async function remove(req, res, next) {
   }
 }
 
+export async function removeAll(req, res, next) {
+	try {
+		const deleted = await schedulesService.deleteAllSchedules();
+		res.json({ message: "Semua jadwal berhasil dihapus", deleted });
+	} catch (error) {
+		if (error.status) {
+			return res
+				.status(error.status)
+				.json({ error: error.message, details: error.details || [] });
+		}
+		next(error);
+	}
+}
+
 export async function generate(req, res, next) {
-  try {
-    const result = await schedulesService.generateSchedules({
-      clearExisting: req.body.clearExisting ?? true,
-    });
-    res.json({
-      message: `Jadwal berhasil dibuat: ${result.total} sesi`,
-      ...result,
-    });
-  } catch (error) {
-    if (error.status) {
-      return res.status(error.status).json({ error: error.message, details: error.details || [] });
-    }
-    next(error);
-  }
+	try {
+		const result = await schedulesService.generateSchedules({
+			clearExisting: req.body.clearExisting ?? true,
+		});
+		res.json({
+			message: `Jadwal berhasil dibuat: ${result.total} sesi`,
+			...result,
+		});
+	} catch (error) {
+		if (error.status) {
+			return res
+				.status(error.status)
+				.json({ error: error.message, details: error.details || [] });
+		}
+		next(error);
+	}
 }
 
 export default {
-  getAll,
-  getById,
-  create,
-  update,
-  remove,
-  generate,
+	getAll,
+	getById,
+	create,
+	update,
+	remove,
+	removeAll,
+	generate,
 };

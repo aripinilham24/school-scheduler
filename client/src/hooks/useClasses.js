@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
-import { INITIAL_CLASSES } from "@/assets/data";
 
 export function useClasses() {
   const [classes, setClasses] = useState([]);
@@ -11,12 +10,13 @@ export function useClasses() {
     try {
       setLoading(true);
       const res = await api.get("/classes");
-      const data = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
-      setClasses(data.length > 0 ? data : INITIAL_CLASSES);
+      // Handle both response formats: direct array or {data: array}
+      const data = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+      setClasses(data.length > 0 ? data : []);
       setError(null);
     } catch (err) {
       setError(err.message);
-      setClasses(INITIAL_CLASSES);
+      setClasses([]); // No fallback data
     } finally {
       setLoading(false);
     }

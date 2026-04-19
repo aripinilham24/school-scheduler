@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import StatCard from "@/components/layout/StatCard";
 import ClassCard from "@/components/layout/ClassCard";
 import Modal from "@/components/layout/Modal";
@@ -11,9 +11,7 @@ import {
   Search,
   Trash2,
   BookOpen,
-  Clock,
   AlertTriangle,
-  Calendar,
   Zap,
   GraduationCap,
   RefreshCw,
@@ -25,8 +23,6 @@ import {
 export default function ClassPage() {
   const { classes, loading, error, addClass, updateClass, deleteClass } =
     useClasses();
-  const [tab, setTab] = useState("classes");
-  const [schedule, setSchedule] = useState([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -35,12 +31,18 @@ export default function ClassPage() {
     (c) =>
       !search ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
-      (c.classCode || "").toLowerCase().includes(search.toLowerCase()),
+      (c.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (c.major || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleGenerate = () => {
-    setSchedule(generateSchedule(classes));
-    setTab("schedule");
+    // Generate schedule dari Schedule page
+    // Navigate ke jadwal page dengan notification
+    Swal.fire({
+      icon: "info",
+      title: "Generate Jadwal",
+      text: "Silakan gunakan tombol Generate pada halaman Jadwal",
+    });
   };
 
   const handleAdd = async (form) => {
@@ -90,15 +92,9 @@ export default function ClassPage() {
     }
   };
 
-  const totalSessions = classes.reduce(
-    (a, c) => a + (c.sessionsPerWeek || 0),
-    0,
-  );
-  const totalHours = classes.reduce(
-    (a, c) => a + ((c.duration || 0) * (c.sessionsPerWeek || 0)) / 60,
-    0,
-  );
-  const conflicts = schedule.filter((s) => s.conflict).length;
+  // Calculate stats
+  const totalStudents = classes.reduce((a, c) => a + (c.students || 0), 0);
+  const totalCapacity = classes.reduce((a, c) => a + (c.capacity || 0), 0);
 
   if (loading) {
     return (
@@ -143,22 +139,16 @@ export default function ClassPage() {
             color="bg-[#6C63FF]"
           />
           <StatCard
-            icon={Calendar}
-            label="Sesi / Minggu"
-            value={totalSessions}
+            icon={GraduationCap}
+            label="Total Siswa"
+            value={totalStudents}
             color="bg-[#10B981]"
           />
           <StatCard
-            icon={Clock}
-            label="Jam / Minggu"
-            value={`${totalHours.toFixed(0)}j`}
-            color="bg-[#F59E0B]"
-          />
-          <StatCard
             icon={AlertTriangle}
-            label="Bentrok Jadwal"
-            value={conflicts}
-            color={conflicts > 0 ? "bg-[#FF4757]" : "bg-[#9ca3af]"}
+            label="Grade Level"
+            value={new Set(classes.map(c => c.grade)).size}
+            color="bg-[#8B5CF6]"
           />
         </div>
 
@@ -166,92 +156,77 @@ export default function ClassPage() {
         <div className="flex items-center gap-1 bg-[#F1F5F9] rounded-xl p-1 w-fit">
           {[
             { key: "classes", label: "Daftar Kelas", icon: GraduationCap },
-            { key: "schedule", label: "Jadwal", icon: Calendar },
           ].map(({ key, label, icon: Icon }) => (
-            <button
+            <div
               key={key}
-              onClick={() => setTab(key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                tab === key
-                  ? "bg-white text-[#08060d] shadow-sm"
-                  : "text-[#9ca3af] hover:text-[#6b6375]"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium`}
             >
               <Icon size={15} />
               {label}
-              {key === "schedule" && schedule.length > 0 && (
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#6C63FF] text-white text-[10px] font-bold">
-                  {schedule.length}
-                </span>
-              )}
-            </button>
+            </div>
           ))}
         </div>
       </div>
 
       {/* ── Body ── */}
       <div className="flex-1 overflow-y-auto px-8 py-6">
-        {tab === "classes" ? (
-          <>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="relative flex items-center h-10 px-4 gap-2 rounded-xl border border-[#E5E7EB] bg-white flex-1 max-w-sm hover:border-[#c4c0ff] focus-within:border-[#6C63FF] focus-within:ring-2 focus-within:ring-[rgba(108,99,255,0.12)] transition-all">
-                <Search size={15} className="text-[#9ca3af] shrink-0" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Cari kelas atau mata pelajaran..."
-                  className="flex-1 bg-transparent text-sm text-[#08060d] placeholder:text-[#9ca3af] outline-none"
-                />
-              </div>
-              <button
-                onClick={() => setModal("add")}
-                className="flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.01]"
-                style={{
-                  background: "linear-gradient(135deg,#6C63FF,#8A7BFF)",
-                }}
-              >
-                <Plus size={15} /> Tambah Kelas
-              </button>
+        <>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="relative flex items-center h-10 px-4 gap-2 rounded-xl border border-[#E5E7EB] bg-white flex-1 max-w-sm hover:border-[#c4c0ff] focus-within:border-[#6C63FF] focus-within:ring-2 focus-within:ring-[rgba(108,99,255,0.12)] transition-all">
+              <Search size={15} className="text-[#9ca3af] shrink-0" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari kelas atau mata pelajaran..."
+                className="flex-1 bg-transparent text-sm text-[#08060d] placeholder:text-[#9ca3af] outline-none"
+              />
             </div>
+            <button
+              onClick={() => setModal("add")}
+              className="flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.01]"
+              style={{
+                background: "linear-gradient(135deg,#6C63FF,#8A7BFF)",
+              }}
+            >
+              <Plus size={15} /> Tambah Kelas
+            </button>
+          </div>
 
-            {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-[rgba(108,99,255,0.08)] flex items-center justify-center">
-                  <BookOpen size={24} className="text-[#6C63FF]" />
-                </div>
-                <p className="text-sm font-medium text-[#08060d]">
-                  Tidak ada kelas ditemukan
-                </p>
-                <p className="text-xs text-[#9ca3af]">
-                  Coba kata kunci lain atau tambah kelas baru
-                </p>
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-[rgba(108,99,255,0.08)] flex items-center justify-center">
+                <BookOpen size={24} className="text-[#6C63FF]" />
               </div>
-            ) : (
-              <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                {filtered.map((cls) => (
-                  <ClassCard
-                    key={cls.id}
-                    cls={cls}
-                    onEdit={(c) => {
-                      setSelected(c);
-                      setModal("edit");
-                    }}
-                    onDelete={(id) => {
-                      setSelected({ id });
-                      setModal("delete");
-                    }}
-                    onView={(c) => {
-                      setSelected(c);
-                      setModal("detail");
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <ScheduleTab schedule={schedule} onRegenerate={handleGenerate} />
-        )}
+              <p className="text-sm font-medium text-[#08060d]">
+                Tidak ada kelas ditemukan
+              </p>
+              <p className="text-xs text-[#9ca3af]">
+                Coba kata kunci lain atau tambah kelas baru
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+              {filtered.map((cls) => (
+                <ClassCard
+                  key={cls.id}
+                  cls={cls}
+                  onEdit={(c) => {
+                    setSelected(c);
+                    setModal("edit");
+                  }}
+                  onDelete={(id) => {
+                    setSelected({ id });
+                    setModal("delete");
+                  }}
+                  onView={(c) => {
+                    setSelected(c);
+                    setModal("detail");
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </>
       </div>
 
       {/* ── Modals ── */}

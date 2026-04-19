@@ -77,6 +77,7 @@ export function generateSchedule(input, additional = {}) {
               classId:     cls.id,
               className:   cls.name,
               grade:       cls.grade,
+              room:        cls.room || "R-101",
               double,
             });
           }
@@ -91,9 +92,47 @@ export function generateSchedule(input, additional = {}) {
     const result = [];
     const unscheduled = [];
 
+    // Group tasks by class and day
+    const tasksByClass = new Map();
     for (const task of tasks) {
-      const placed = tryPlaceTask(task, teacherBusy, classBusy, result);
-      if (!placed) unscheduled.push(task);
+      if (!tasksByClass.has(task.classId)) {
+        tasksByClass.set(task.classId, []);
+      }
+      tasksByClass.get(task.classId).push(task);
+    }
+
+    // Track scheduled sessions per class
+    const scheduledPerClass = new Map(
+      Array.from(tasksByClass.keys()).map((classId) => [classId, 0])
+    );
+
+    // Day-by-day scheduling: fill each day as much as possible before moving to next
+    for (const day of days) {
+      let madeProgress = true;
+      while (madeProgress) {
+        madeProgress = false;
+
+        // Try to schedule one session per class on this day
+        for (const [classId, classTasks] of tasksByClass) {
+          const scheduled = scheduledPerClass.get(classId);
+          if (scheduled >= classTasks.length) continue; // Already all scheduled
+
+          const task = classTasks[scheduled];
+          const placed = tryPlaceTask(task, day, teacherBusy, classBusy, result, timeSlots);
+          if (placed) {
+            scheduledPerClass.set(classId, scheduled + 1);
+            madeProgress = true;
+          }
+        }
+      }
+    }
+
+    // Collect remaining unscheduled tasks
+    for (const [classId, classTasks] of tasksByClass) {
+      const scheduled = scheduledPerClass.get(classId);
+      for (let i = scheduled; i < classTasks.length; i++) {
+        unscheduled.push(classTasks[i]);
+      }
     }
 
     return { schedules: result, unscheduled };
@@ -186,53 +225,80 @@ export function generateSchedule(input, additional = {}) {
 
 // ── Penempatan Tugas ─────────────────────────────────────────
 
-function tryPlaceTask(task, teacherBusy, classBusy, result) {
-  // Acak urutan hari dan slot supaya tidak menumpuk di hari yang sama
-  const days  = shuffled([...DAYS]);
-  const slots = shuffled([...TIME_SLOTS]);
+function tryPlaceTask(task, dayOrTeacherBusy, classBusyOrDay, resultOrTimeSlots, resultOrUndefined, timeSlots) {
+  // Support both old signature (task, teacherBusy, classBusy, result) and new (task, day, teacherBusy, classBusy, result, timeSlots)
+  let day, teacherBusy, classBusy, result, slots;
+  
+  if (typeof dayOrTeacherBusy === 'string') {
+    // New signature: (task, day, teacherBusy, classBusy, result, timeSlots)
+    day = dayOrTeacherBusy;
+    teacherBusy = classBusyOrDay;
+    classBusy = resultOrTimeSlots;
+    result = resultOrUndefined;
+    slots = timeSlots || TIME_SLOTS;
+  } else {
+    // Old signature: (task, teacherBusy, classBusy, result)
+    teacherBusy = dayOrTeacherBusy;
+    classBusy = classBusyOrDay;
+    result = resultOrTimeSlots;
+    slots = TIME_SLOTS;
+    // Try all days
+    const days  = shuffled([...DAYS]);
+    for (const tryDay of days) {
+      if (attemptPlaceOnDay(task, tryDay, teacherBusy, classBusy, result, slots)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-  for (const day of days) {
-    for (const slotObj of slots) {
-      const slot = slotObj.slot;
+  // New signature: only try specific day
+  return attemptPlaceOnDay(task, day, teacherBusy, classBusy, result, slots);
+}
 
-      if (task.double) {
-        // Double period: butuh slot N dan N+1 berturut-turut
-        const nextSlotObj = TIME_SLOTS.find((s) => s.slot === slot + 1);
-        if (!nextSlotObj) continue;
+function attemptPlaceOnDay(task, day, teacherBusy, classBusy, result, timeSlots) {
+  const slots = shuffled([...timeSlots]);
 
-        // Pastikan slot 1 dan slot 2 tidak bentrok
-        if (
-          isFree(teacherBusy, task.teacherId, day, slot) &&
-          isFree(teacherBusy, task.teacherId, day, slot + 1) &&
-          isFree(classBusy,   task.classId,   day, slot) &&
-          isFree(classBusy,   task.classId,   day, slot + 1)
-        ) {
-          // Tandai keduanya sebagai terpakai
-          markBusy(teacherBusy, task.teacherId, day, slot);
-          markBusy(teacherBusy, task.teacherId, day, slot + 1);
-          markBusy(classBusy,   task.classId,   day, slot);
-          markBusy(classBusy,   task.classId,   day, slot + 1);
+  for (const slotObj of slots) {
+    const slot = slotObj.slot;
 
-          result.push(buildEntry(task, day, slotObj, nextSlotObj));
-          return true;
-        }
-      } else {
-        // Single period
-        if (
-          isFree(teacherBusy, task.teacherId, day, slot) &&
-          isFree(classBusy,   task.classId,   day, slot)
-        ) {
-          markBusy(teacherBusy, task.teacherId, day, slot);
-          markBusy(classBusy,   task.classId,   day, slot);
+    if (task.double) {
+      // Double period: butuh slot N dan N+1 berturut-turut
+      const nextSlotObj = timeSlots.find((s) => s.slot === slot + 1);
+      if (!nextSlotObj) continue;
 
-          result.push(buildEntry(task, day, slotObj, null));
-          return true;
-        }
+      // Pastikan slot 1 dan slot 2 tidak bentrok
+      if (
+        isFree(teacherBusy, task.teacherId, day, slot) &&
+        isFree(teacherBusy, task.teacherId, day, slot + 1) &&
+        isFree(classBusy,   task.classId,   day, slot) &&
+        isFree(classBusy,   task.classId,   day, slot + 1)
+      ) {
+        // Tandai keduanya sebagai terpakai
+        markBusy(teacherBusy, task.teacherId, day, slot);
+        markBusy(teacherBusy, task.teacherId, day, slot + 1);
+        markBusy(classBusy,   task.classId,   day, slot);
+        markBusy(classBusy,   task.classId,   day, slot + 1);
+
+        result.push(buildEntry(task, day, slotObj, nextSlotObj, task.room));
+        return true;
+      }
+    } else {
+      // Single period
+      if (
+        isFree(teacherBusy, task.teacherId, day, slot) &&
+        isFree(classBusy,   task.classId,   day, slot)
+      ) {
+        markBusy(teacherBusy, task.teacherId, day, slot);
+        markBusy(classBusy,   task.classId,   day, slot);
+
+        result.push(buildEntry(task, day, slotObj, null, task.room));
+        return true;
       }
     }
   }
 
-  return false; // tidak ada slot kosong
+  return false; // tidak ada slot kosong di hari ini
 }
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -245,7 +311,7 @@ function markBusy(map, id, day, slot) {
   map.set(`${id}_${day}_${slot}`, true);
 }
 
-function buildEntry(task, day, slot1, slot2) {
+function buildEntry(task, day, slot1, slot2, room) {
   return {
     teacherId:   task.teacherId,
     teacherName: task.teacherName,
@@ -254,6 +320,7 @@ function buildEntry(task, day, slot1, slot2) {
     classId:     task.classId,
     className:   task.className,
     grade:       task.grade,
+    room:        room || "R-101",
     day,
     slot:        slot1.slot,
     startTime:   slot1.start,

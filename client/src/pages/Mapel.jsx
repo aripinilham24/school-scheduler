@@ -21,14 +21,8 @@ const INITIAL_FORM_STATE = {
   name: "",
   code: "",
   teacher: "",
-  level: "",
   description: "",
-  credits: "",
-  hours: "",
-  status: "Active",
 };
-
-const statusOptions = ["Active", "Inactive", "On Leave"];
 
 export default function MapelPage() {
   const { mapel, loading, error, addMapel, updateMapel, deleteMapel } =
@@ -61,11 +55,7 @@ export default function MapelPage() {
       name: mapelItem.name || "",
       code: mapelItem.code || "",
       teacher: mapelItem.teacher || "",
-      level: mapelItem.level || "",
       description: mapelItem.description || "",
-      credits: mapelItem.credits != null ? String(mapelItem.credits) : "",
-      hours: mapelItem.hours != null ? String(mapelItem.hours) : "",
-      status: mapelItem.status || "Active",
     });
     setModal("edit");
   };
@@ -83,8 +73,6 @@ export default function MapelPage() {
 
     const payload = {
       ...formData,
-      credits: Number(formData.credits),
-      hours: Number(formData.hours),
     };
 
     try {
@@ -292,16 +280,6 @@ export default function MapelPage() {
                   required
                 />
               </label>
-              <label className="block">
-                <span className="text-sm font-medium text-[#475569]">Level</span>
-                <input
-                  name="level"
-                  value={formData.level}
-                  onChange={handleInputChange}
-                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
-                  required
-                />
-              </label>
             </div>
 
             <label className="block">
@@ -313,47 +291,6 @@ export default function MapelPage() {
                 rows={3}
                 className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
               />
-            </label>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-sm font-medium text-[#475569]">SKS</span>
-                <input
-                  name="credits"
-                  type="number"
-                  min="0"
-                  value={formData.credits}
-                  onChange={handleInputChange}
-                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm font-medium text-[#475569]">Jam</span>
-                <input
-                  name="hours"
-                  type="number"
-                  min="0"
-                  value={formData.hours}
-                  onChange={handleInputChange}
-                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="text-sm font-medium text-[#475569]">Status</span>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
-              >
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
             </label>
 
             <div className="flex items-center justify-end gap-3 pt-2">

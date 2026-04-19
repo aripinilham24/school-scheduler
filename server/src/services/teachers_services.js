@@ -5,82 +5,84 @@ const teachersCollection = db.collection("teachers");
 
 // Standarisasi Input dan Validasi
 function normalizeTeacherInput(raw) {
-  return {
-    name: (raw.name || "").toString().trim(),
-    subject: (raw.subject || "").toString().trim(),
-    email: (raw.email || "").toString().trim().toLowerCase(),
-    phone: (raw.phone || "").toString().trim(),
-    status: (raw.status || "").toString().trim(),
-    rating: raw.rating !== undefined ? Number(raw.rating) : undefined,
-    students: raw.students !== undefined ? Number(raw.students) : undefined,
-    courses: raw.courses !== undefined ? Number(raw.courses) : undefined,
-    joinDate: (raw.joinDate || "").toString().trim(),
-  };
+	return {
+		name: (raw.name || "").toString().trim(),
+		subject: (raw.subject || "").toString().trim(),
+		email: (raw.email || "").toString().trim().toLowerCase(),
+		phone: (raw.phone || "").toString().trim(),
+		status: (raw.status || "Active").toString().trim(),
+		grades: Array.isArray(raw.grades) ? raw.grades : [],
+		majors: Array.isArray(raw.majors) ? raw.majors : [],
+		rating: raw.rating !== undefined ? Number(raw.rating) : 0,
+		students: raw.students !== undefined ? Number(raw.students) : 0,
+		courses: raw.courses !== undefined ? Number(raw.courses) : 0,
+	};
 }
 
 // Validasi Payload untuk Create dan Update
 function validateTeacherPayload(payload, { requireAllFields = false } = {}) {
-  const errors = [];
-  const teacher = normalizeTeacherInput(payload);
+	const errors = [];
+	const teacher = normalizeTeacherInput(payload);
 
-  if (!teacher.name) errors.push("name harus diisi");
-  if (!teacher.subject) errors.push("subject harus diisi");
-  if (!teacher.email) {
-    errors.push("email harus diisi");
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(teacher.email)) {
-    errors.push("email tidak valid");
-  }
+	if (!teacher.name) errors.push("name harus diisi");
+	if (!teacher.subject) errors.push("subject harus diisi");
+	if (!teacher.email) {
+		errors.push("email harus diisi");
+	} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(teacher.email)) {
+		errors.push("email tidak valid");
+	}
 
-  if (!teacher.phone) errors.push("phone harus diisi");
-  if (!teacher.status) errors.push("status harus diisi");
+	if (!teacher.phone) errors.push("phone harus diisi");
 
-  if (requireAllFields || payload.rating !== undefined) {
-    if (teacher.rating === undefined || Number.isNaN(teacher.rating) || teacher.rating < 0 || teacher.rating > 5) {
-      errors.push("rating harus angka antara 0 sampai 5");
-    }
-  }
-  if (requireAllFields || payload.students !== undefined) {
-    if (teacher.students === undefined || !Number.isInteger(teacher.students) || teacher.students < 0) {
-      errors.push("students harus integer >= 0");
-    }
-  }
-  if (requireAllFields || payload.courses !== undefined) {
-    if (teacher.courses === undefined || !Number.isInteger(teacher.courses) || teacher.courses < 0) {
-      errors.push("courses harus integer >= 0");
-    }
-  }
+	if (teacher.rating < 0 || teacher.rating > 5) {
+		errors.push("rating harus angka antara 0 sampai 5");
+	}
 
-  if (!teacher.joinDate) errors.push("joinDate harus diisi");
+	if (teacher.students < 0) {
+		errors.push("students harus integer >= 0");
+	}
 
-  return { teacher, errors };
+	if (teacher.courses < 0) {
+		errors.push("courses harus integer >= 0");
+	}
+
+	return { teacher, errors };
 }
-
 
 // List Guru dengan filter pencarian
 export async function listTeachers({ search = "", subject, status } = {}) {
-  let query = teachersCollection;
+	const snapshot = await teachersCollection.get();
+	let items = [];
 
-  if (subject) query = query.where("subject", "==", subject);
-  if (status) query = query.where("status", "==", status);
+	snapshot.forEach((doc) => {
+		items.push({ id: doc.id, ...doc.data() });
+	});
 
-  query = query.orderBy("createdAt", "desc");
+	// Filter by subject
+	if (subject) {
+		items = items.filter((t) => t.subject === subject);
+	}
 
-  const snapshot = await query.get();
-  const items = [];
-  snapshot.forEach((doc) => {
-    items.push({ id: doc.id, ...doc.data() });
-  });
+	// Filter by status
+	if (status) {
+		items = items.filter((t) => t.status === status);
+	}
 
-  if (search) {
-    const lcSearch = search.toString().trim().toLowerCase();
-    return items.filter((item) =>
-      (item.name || "").toString().toLowerCase().includes(lcSearch) ||
-      (item.email || "").toString().toLowerCase().includes(lcSearch) ||
-      (item.subject || "").toString().toLowerCase().includes(lcSearch),
-    );
-  }
+	// Filter by search
+	if (search) {
+		const lcSearch = search.toString().trim().toLowerCase();
+		items = items.filter(
+			(item) =>
+				(item.name || "").toString().toLowerCase().includes(lcSearch) ||
+				(item.email || "").toString().toLowerCase().includes(lcSearch) ||
+				(item.subject || "").toString().toLowerCase().includes(lcSearch),
+		);
+	}
 
-  return items;
+	// Sort by name
+	items.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+	return items;
 }
 
 // Mengambil data guru berdasarkan ID

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AVATAR_COLORS } from "@/assets/data";
 import { getInitials } from "@/utils/getInitials";
 import { getStatusClasses } from "@/utils/getStatusCLasses";
-import { Edit2, Star, BookOpen, Clock, MoreVertical, Users, Trash2 } from "lucide-react";
+import { Edit2, Star, BookOpen, MoreVertical, Users, Trash2 } from "lucide-react";
 
 export function TeacherCard({ teacher, index, onEdit, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -81,12 +81,26 @@ export function TeacherCard({ teacher, index, onEdit, onDelete }) {
         </div>
         <div className="flex items-center gap-2 text-xs text-[#6b6375]">
           <BookOpen size={12} className="text-[#9ca3af] shrink-0" />
-          <span>{teacher.courses ?? 0} kursus</span>
+          <span>{teacher.courses ?? 0} kelas</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
-          <Clock size={12} className="text-[#9ca3af] shrink-0" />
-          <span>Bergabung {teacher.joinDate ?? "-"}</span>
-        </div>
+        {teacher.grades && teacher.grades.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {teacher.grades.map((grade) => (
+              <span key={grade} className="text-[10px] px-2 py-1 rounded bg-blue-50 text-blue-700 font-medium">
+                Kelas {grade}
+              </span>
+            ))}
+          </div>
+        )}
+        {teacher.majors && teacher.majors.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {teacher.majors.map((major) => (
+              <span key={major} className="text-[10px] px-2 py-1 rounded bg-purple-50 text-purple-700 font-medium">
+                {major}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

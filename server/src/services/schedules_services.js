@@ -150,109 +150,165 @@ export async function deleteAllSchedules() {
 
 // Generate Jadwal Otomatis
 export async function generateSchedules({ clearExisting = true } = {}) {
-  // 1. Ambil semua data secara paralel
-  const [classesSnap, teachersSnap, subjectsSnap, assignmentsSnap] = await Promise.all([
-    db.collection("classrooms").get(),
-    db.collection("teachers").get(),
-    db.collection("subjects").get(),
-    db.collection("assignments").get(),
-  ]);
+	// 1. Ambil semua data secara paralel
+	const [classesSnap, teachersSnap, subjectsSnap, assignmentsSnap] =
+		await Promise.all([
+			db.collection("classrooms").get(),
+			db.collection("teachers").get(),
+			db.collection("subjects").get(),
+			db.collection("assignments").get(),
+		]);
 
-  const classes = classesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  const teachers = teachersSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  const subjects = subjectsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  const assignments = assignmentsSnap.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-  }));
+	const classes = classesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+	const teachers = teachersSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+	const subjects = subjectsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+	const assignments = assignmentsSnap.docs.map((d) => ({
+		id: d.id,
+		...d.data(),
+	}));
 
-  if (classes.length === 0) {
-    const err = new Error("Belum ada data kelas. Jalankan seed terlebih dahulu.");
-    err.status = 400;
-    throw err;
-  }
-  if (teachers.length === 0) {
-    const err = new Error("Belum ada data guru. Jalankan seed terlebih dahulu.");
-    err.status = 400;
-    throw err;
-  }
-  if (subjects.length === 0) {
-    const err = new Error("Belum ada data mata pelajaran. Jalankan seed terlebih dahulu.");
-    err.status = 400;
-    throw err;
-  }
-  if (assignments.length === 0) {
-    const err = new Error("Belum ada assignment guru. Jalankan seed terlebih dahulu.");
-    err.status = 400;
-    throw err;
-  }
+	if (classes.length === 0) {
+		const err = new Error(
+			"Belum ada data kelas. Jalankan seed terlebih dahulu.",
+		);
+		err.status = 400;
+		throw err;
+	}
+	if (teachers.length === 0) {
+		const err = new Error(
+			"Belum ada data guru. Jalankan seed terlebih dahulu.",
+		);
+		err.status = 400;
+		throw err;
+	}
+	if (subjects.length === 0) {
+		const err = new Error(
+			"Belum ada data mata pelajaran. Jalankan seed terlebih dahulu.",
+		);
+		err.status = 400;
+		throw err;
+	}
+	if (assignments.length === 0) {
+		const err = new Error(
+			"Belum ada assignment guru. Jalankan seed terlebih dahulu.",
+		);
+		err.status = 400;
+		throw err;
+	}
 
-  // 2. Gabungkan assignment ke dalam teacher
-  const teacherWithAssignments = teachers.map((teacher) => ({
-    ...teacher,
-    subjects: assignments
-      .filter((a) => a.teacherId === teacher.id)
-      .map((a) => ({
-        subjectId: a.subjectId,
-        classIds: a.classIds,
-        hoursPerWeek: a.hoursPerWeek,
-      })),
-  }));
+	// 2. Gabungkan assignment ke dalam teacher
+	const teacherWithAssignments = teachers.map((teacher) => ({
+		...teacher,
+		subjects: assignments
+			.filter((a) => a.teacherId === teacher.id)
+			.map((a) => ({
+				subjectId: a.subjectId,
+				classIds: a.classIds,
+				hoursPerWeek: a.hoursPerWeek,
+			})),
+	}));
 
-  // 3. Jalankan algoritma
-  const { schedules, unscheduled } = generateSchedule({
-    classes,
-    teachers: teacherWithAssignments,
-    subjects,
-  });
+	// 3. Jalankan algoritma
+	const { schedules, unscheduled } = generateSchedule({
+		classes,
+		teachers: teacherWithAssignments,
+		subjects,
+	});
 
-  if (schedules.length === 0) {
-    const err = new Error("Jadwal tidak bisa dibuat. Periksa data assignment guru.");
-    err.status = 400;
-    err.details = { unscheduled: unscheduled.length };
-    throw err;
-  }
+	if (schedules.length === 0) {
+		const err = new Error(
+			"Jadwal tidak bisa dibuat. Periksa data assignment guru.",
+		);
+		err.status = 400;
+		err.details = { unscheduled: unscheduled.length };
+		throw err;
+	}
 
-  // 4. Hapus jadwal lama jika diminta
-  if (clearExisting) {
-    const existing = await schedulesCollection.get();
-    if (!existing.empty) {
-      const CHUNK = 400;
-      for (let i = 0; i < existing.docs.length; i += CHUNK) {
-        const batch = db.batch();
-        existing.docs.slice(i, i + CHUNK).forEach((doc) => batch.delete(doc.ref));
-        await batch.commit();
-      }
-    }
-  }
+	// 2.5 Hitung allocation per assignment
+	const allocationByAssignment = new Map();
+	for (const schedule of schedules) {
+		const key = `${schedule.teacherId}_${schedule.subjectId}_${schedule.classId}`;
+		if (!allocationByAssignment.has(key)) {
+			allocationByAssignment.set(key, {
+				target: 0,
+				allocated: 0,
+				subject: schedule.subjectName,
+			});
+		}
+		const record = allocationByAssignment.get(key);
+		record.allocated += schedule.double ? 2 : 1;
+	}
 
-  // 5. Simpan jadwal baru (batch write)
-  const CHUNK = 400;
-  const subjectMap = {};
-  subjects.forEach((s) => {
-    subjectMap[s.id] = s.name;
-  });
+	// Get target hours from assignments
+	for (const assign of assignments) {
+		for (const classId of assign.classIds || []) {
+			const key = `${assign.teacherId}_${assign.subjectId}_${classId}`;
+			if (allocationByAssignment.has(key)) {
+				allocationByAssignment.get(key).target = assign.hoursPerWeek;
+			}
+		}
+	}
 
-  for (let i = 0; i < schedules.length; i += CHUNK) {
-    const batch = db.batch();
-    schedules.slice(i, i + CHUNK).forEach((s) => {
-      batch.set(schedulesCollection.doc(), {
-        ...s,
-        subject: s.subjectName || subjectMap[s.subjectId] || "Unknown",
-        createdAt: new Date(),
-      });
-    });
-    await batch.commit();
-  }
+	// Count over/under allocated
+	let underAllocated = 0;
+	let fullyAllocated = 0;
+	for (const [_, record] of allocationByAssignment) {
+		if (record.allocated < record.target) {
+			underAllocated++;
+		} else {
+			fullyAllocated++;
+		}
+	}
 
-  return {
-    total: schedules.length,
-    unscheduled: unscheduled.length,
-    warning:
-      unscheduled.length > 0
-        ? `${unscheduled.length} sesi tidak bisa dijadwalkan karena slot penuh`
-        : null,
-  };
+	// 4. Hapus jadwal lama jika diminta
+	if (clearExisting) {
+		const existing = await schedulesCollection.get();
+		if (!existing.empty) {
+			const CHUNK = 400;
+			for (let i = 0; i < existing.docs.length; i += CHUNK) {
+				const batch = db.batch();
+				existing.docs
+					.slice(i, i + CHUNK)
+					.forEach((doc) => batch.delete(doc.ref));
+				await batch.commit();
+			}
+		}
+	}
+
+	// 5. Simpan jadwal baru (batch write)
+	const CHUNK = 400;
+	const subjectMap = {};
+	subjects.forEach((s) => {
+		subjectMap[s.id] = s.name;
+	});
+
+	for (let i = 0; i < schedules.length; i += CHUNK) {
+		const batch = db.batch();
+		schedules.slice(i, i + CHUNK).forEach((s) => {
+			batch.set(schedulesCollection.doc(), {
+				...s,
+				subject: s.subjectName || subjectMap[s.subjectId] || "Unknown",
+				createdAt: new Date(),
+			});
+		});
+		await batch.commit();
+	}
+
+	return {
+		total: schedules.length,
+		unscheduled: unscheduled.length,
+		fullyAllocated,
+		underAllocated,
+		allocationRate: `${fullyAllocated}/${fullyAllocated + underAllocated}`,
+		warning:
+			unscheduled.length > 0
+				? `${unscheduled.length} sesi tidak bisa dijadwalkan karena slot penuh`
+				: null,
+		notice:
+			underAllocated > 0
+				? `${underAllocated} assignment belum mencapai target jam per minggu`
+				: "Semua assignment sudah mencapai target jam per minggu ✓",
+	};
 }
 
 export default {

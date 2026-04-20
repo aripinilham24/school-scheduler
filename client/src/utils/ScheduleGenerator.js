@@ -52,6 +52,9 @@ export function generateSchedule(input, additional = {}) {
     const subjectMap = new Map(subjects.map((s) => [s.id, s]));
     const tasks = [];
 
+    // Track target hours per assignment
+    const assignmentHours = new Map();
+
     for (const teacher of teachers) {
       for (const assignment of teacher.subjects || []) {
         const subject = subjectMap.get(assignment.subjectId);
@@ -64,12 +67,22 @@ export function generateSchedule(input, additional = {}) {
           const cls = classes.find((c) => c.id === classId);
           if (!cls) continue;
 
+          const assignmentKey = `${teacher.id}_${assignment.subjectId}_${classId}`;
+          assignmentHours.set(assignmentKey, {
+            teacherId: teacher.id,
+            subjectId: assignment.subjectId,
+            classId,
+            targetHours: hoursPerWeek,
+            allocatedHours: 0,
+            tasks: [],
+          });
+
           const sessionsNeeded = double
             ? Math.ceil(hoursPerWeek / 2)
             : hoursPerWeek;
 
           for (let i = 0; i < sessionsNeeded; i++) {
-            tasks.push({
+            const task = {
               teacherId:   teacher.id,
               teacherName: teacher.name,
               subjectId:   subject.id,
@@ -79,7 +92,11 @@ export function generateSchedule(input, additional = {}) {
               grade:       cls.grade,
               room:        cls.room || "R-101",
               double,
-            });
+              assignmentKey,
+              hoursValue: double ? 2 : 1,
+            };
+            tasks.push(task);
+            assignmentHours.get(assignmentKey).tasks.push(task);
           }
         }
       }
@@ -92,46 +109,99 @@ export function generateSchedule(input, additional = {}) {
     const result = [];
     const unscheduled = [];
 
-    // Group tasks by class and day
-    const tasksByClass = new Map();
-    for (const task of tasks) {
-      if (!tasksByClass.has(task.classId)) {
-        tasksByClass.set(task.classId, []);
-      }
-      tasksByClass.get(task.classId).push(task);
-    }
+    // ──────────────────────────────────────────────────────────
+    // PASS 1: Normal Placement (fill greedily)
+    // ──────────────────────────────────────────────────────────
+    const taskQueue = [...tasks];
+    const maxAttemptsPerTask = 3;
+    const taskAttempts = new Map();
 
-    // Track scheduled sessions per class
-    const scheduledPerClass = new Map(
-      Array.from(tasksByClass.keys()).map((classId) => [classId, 0])
-    );
-
-    // Day-by-day scheduling: fill each day as much as possible before moving to next
     for (const day of days) {
-      let madeProgress = true;
-      while (madeProgress) {
-        madeProgress = false;
+      for (let attempt = 0; attempt < 50; attempt++) {
+        let madeProgress = false;
 
-        // Try to schedule one session per class on this day
-        for (const [classId, classTasks] of tasksByClass) {
-          const scheduled = scheduledPerClass.get(classId);
-          if (scheduled >= classTasks.length) continue; // Already all scheduled
+        for (let i = 0; i < taskQueue.length; i++) {
+          const task = taskQueue[i];
+          const attempts = taskAttempts.get(i) || 0;
 
-          const task = classTasks[scheduled];
+          if (attempts >= maxAttemptsPerTask) continue;
+
           const placed = tryPlaceTask(task, day, teacherBusy, classBusy, result, timeSlots);
           if (placed) {
-            scheduledPerClass.set(classId, scheduled + 1);
+            const assignKey = task.assignmentKey;
+            if (assignmentHours.has(assignKey)) {
+              const assign = assignmentHours.get(assignKey);
+              assign.allocatedHours += task.hoursValue;
+            }
+            taskQueue.splice(i, 1);
             madeProgress = true;
+            break;
+          } else {
+            taskAttempts.set(i, attempts + 1);
           }
+        }
+
+        if (!madeProgress) break;
+      }
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // PASS 2: Check under-allocated assignments
+    // ──────────────────────────────────────────────────────────
+    const underAllocated = [];
+    for (const [key, assign] of assignmentHours) {
+      const shortage = assign.targetHours - assign.allocatedHours;
+      if (shortage > 0) {
+        underAllocated.push({
+          key,
+          shortage,
+          ...assign,
+        });
+      }
+    }
+
+    // Sort by shortage (highest first) for priority placement
+    underAllocated.sort((a, b) => b.shortage - a.shortage);
+
+    // ──────────────────────────────────────────────────────────
+    // PASS 3: Force-fill under-allocated with priority
+    // ──────────────────────────────────────────────────────────
+    for (const underAssign of underAllocated) {
+      // Try to place remaining tasks for this assignment
+      for (const task of underAssign.tasks) {
+        if (result.some((r) => r.teacherId === task.teacherId &&
+                              r.subjectId === task.subjectId &&
+                              r.classId === task.classId)) {
+          continue; // Already placed
+        }
+
+        // Try all days with a bit more flexibility
+        const daysToTry = shuffled([...days]);
+        let placed = false;
+
+        for (const day of daysToTry) {
+          if (tryPlaceTask(task, day, teacherBusy, classBusy, result, timeSlots)) {
+            underAssign.allocatedHours += task.hoursValue;
+            placed = true;
+            break;
+          }
+        }
+
+        if (!placed) {
+          unscheduled.push(task);
         }
       }
     }
 
     // Collect remaining unscheduled tasks
-    for (const [classId, classTasks] of tasksByClass) {
-      const scheduled = scheduledPerClass.get(classId);
-      for (let i = scheduled; i < classTasks.length; i++) {
-        unscheduled.push(classTasks[i]);
+    for (const task of taskQueue) {
+      const alreadyScheduled = result.some(
+        (r) => r.teacherId === task.teacherId &&
+               r.subjectId === task.subjectId &&
+               r.classId === task.classId
+      );
+      if (!alreadyScheduled) {
+        unscheduled.push(task);
       }
     }
 

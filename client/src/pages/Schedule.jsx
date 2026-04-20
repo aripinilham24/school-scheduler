@@ -99,10 +99,18 @@ export default function Schedule() {
     try {
       // Coba Firebase
       const res = await generateFromFirebase(true);
+      const data = res?.data;
+      
+      // Build detailed message with allocation info
+      let messageDetails = '';
+      if (data?.allocationRate) {
+        messageDetails = `${data.total} sesi terjadwal\n${data.allocationRate} assignment terpenuhi`;
+      }
+      
       showToast(
-        res.warning ? "warning" : "success",
-        res.message,
-        res.warning ?? null,
+        data?.warning || data?.underAllocated > 0 ? "warning" : "success",
+        res.message || "Jadwal berhasil dibuat ✓",
+        (data?.notice || messageDetails) ?? null,
       );
     } catch (fbErr) {
       // Fallback: generate lokal dari state classes

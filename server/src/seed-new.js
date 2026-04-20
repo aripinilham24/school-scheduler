@@ -131,12 +131,12 @@ const teachers = [
 		status: "Active",
 	},
 
-	// ── IPS: Sejarah (grade 10-11-12, tapi prioritas IPS) ──
+	// ── IPS: Sejarah (grade 10-11-12, semua jurusan) ──
 	{
 		name: "Drs. Eka Prasetya",
 		subject: "Sejarah",
 		grades: [10, 11, 12],
-		majors: ["IPS", "Bahasa", "IPA"],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
 		email: "eka.prasetya@sman1.id",
 		phone: "+62 818-7890-1235",
 		status: "Active",
@@ -251,30 +251,126 @@ const teachers = [
 
 const subjects = [
 	// Umum (semua grade, semua jurusan)
-	{ code: "MTK", name: "Matematika", category: "Wajib", grades: [10, 11, 12], majors: ["IPA", "IPS", "Bahasa", "Teknologi"] },
-	{ code: "BI", name: "Bahasa Indonesia", category: "Wajib", grades: [10, 11, 12], majors: ["IPA", "IPS", "Bahasa", "Teknologi"] },
-	{ code: "ING", name: "Bahasa Inggris", category: "Wajib", grades: [10, 11, 12], majors: ["IPA", "IPS", "Bahasa", "Teknologi"] },
-	{ code: "PPKN", name: "Pendidikan Pancasila", category: "Wajib", grades: [10, 11, 12], majors: ["IPA", "IPS", "Bahasa", "Teknologi"] },
-	{ code: "PJOK", name: "Pendidikan Jasmani", category: "Wajib", grades: [10, 11, 12], majors: ["IPA", "IPS", "Bahasa", "Teknologi"] },
-	{ code: "SBD", name: "Seni Budaya", category: "Wajib", grades: [10, 11, 12], majors: ["IPA", "IPS", "Bahasa", "Teknologi"] },
+	{
+		code: "MTK",
+		name: "Matematika",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
+	{
+		code: "BI",
+		name: "Bahasa Indonesia",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
+	{
+		code: "ING",
+		name: "Bahasa Inggris",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
+	{
+		code: "PPKN",
+		name: "Pendidikan Pancasila",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
+	{
+		code: "PJOK",
+		name: "Pendidikan Jasmani",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
+	{
+		code: "SBD",
+		name: "Seni Budaya",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
 
 	// IPA (grade 11-12)
-	{ code: "FIS", name: "Fisika", category: "IPA", grades: [11, 12], majors: ["IPA"] },
-	{ code: "KIM", name: "Kimia", category: "IPA", grades: [11, 12], majors: ["IPA"] },
-	{ code: "BIO", name: "Biologi", category: "IPA", grades: [11, 12], majors: ["IPA"] },
+	{
+		code: "FIS",
+		name: "Fisika",
+		category: "IPA",
+		grades: [11, 12],
+		majors: ["IPA"],
+	},
+	{
+		code: "KIM",
+		name: "Kimia",
+		category: "IPA",
+		grades: [11, 12],
+		majors: ["IPA"],
+	},
+	{
+		code: "BIO",
+		name: "Biologi",
+		category: "IPA",
+		grades: [11, 12],
+		majors: ["IPA"],
+	},
 
 	// IPS (grade 11-12)
-	{ code: "EKO", name: "Ekonomi", category: "IPS", grades: [11, 12], majors: ["IPS"] },
-	{ code: "GEO", name: "Geografi", category: "IPS", grades: [11, 12], majors: ["IPS"] },
-	{ code: "SOC", name: "Sosiologi", category: "IPS", grades: [11, 12], majors: ["IPS"] },
-	{ code: "SEJ", name: "Sejarah", category: "IPS", grades: [10, 11, 12], majors: ["IPS", "Bahasa"] },
+	{
+		code: "EKO",
+		name: "Ekonomi",
+		category: "IPS",
+		grades: [11, 12],
+		majors: ["IPS"],
+	},
+	{
+		code: "GEO",
+		name: "Geografi",
+		category: "IPS",
+		grades: [11, 12],
+		majors: ["IPS"],
+	},
+	{
+		code: "SOC",
+		name: "Sosiologi",
+		category: "IPS",
+		grades: [11, 12],
+		majors: ["IPS"],
+	},
+	{
+		code: "SEJ",
+		name: "Sejarah",
+		category: "IPS",
+		grades: [10, 11, 12],
+		majors: ["IPS", "Bahasa"],
+	},
 
 	// Bahasa (grade 11-12)
-	{ code: "ARAB", name: "Bahasa Arab", category: "Bahasa", grades: [11, 12], majors: ["Bahasa"] },
-	{ code: "MAND", name: "Bahasa Mandarin", category: "Bahasa", grades: [11, 12], majors: ["Bahasa"] },
+	{
+		code: "ARAB",
+		name: "Bahasa Arab",
+		category: "Bahasa",
+		grades: [11, 12],
+		majors: ["Bahasa"],
+	},
+	{
+		code: "MAND",
+		name: "Bahasa Mandarin",
+		category: "Bahasa",
+		grades: [11, 12],
+		majors: ["Bahasa"],
+	},
 
 	// Teknologi (grade 10-11)
-	{ code: "TIK", name: "Teknologi Informasi", category: "Teknologi", grades: [10, 11], majors: ["Teknologi", "IPA"] },
+	{
+		code: "TIK",
+		name: "Teknologi Informasi",
+		category: "Teknologi",
+		grades: [10, 11],
+		majors: ["Teknologi", "IPA"],
+	},
 ];
 
 // ── KELAS (Classrooms dengan Major Assignment) ──────────────
@@ -338,25 +434,98 @@ function generateAssignments(teachers, classrooms) {
 		{ code: "SBD", name: "Seni Budaya", hoursPerWeek: 2 },
 
 		// IPA (11-12)
-		{ code: "FIS", name: "Fisika", hoursPerWeek: 4, grades: [11, 12], majors: ["IPA"] },
-		{ code: "KIM", name: "Kimia", hoursPerWeek: 4, grades: [11, 12], majors: ["IPA"] },
-		{ code: "BIO", name: "Biologi", hoursPerWeek: 4, grades: [11, 12], majors: ["IPA"] },
+		{
+			code: "FIS",
+			name: "Fisika",
+			hoursPerWeek: 4,
+			grades: [11, 12],
+			majors: ["IPA"],
+		},
+		{
+			code: "KIM",
+			name: "Kimia",
+			hoursPerWeek: 4,
+			grades: [11, 12],
+			majors: ["IPA"],
+		},
+		{
+			code: "BIO",
+			name: "Biologi",
+			hoursPerWeek: 4,
+			grades: [11, 12],
+			majors: ["IPA"],
+		},
 
 		// IPS (11-12)
-		{ code: "EKO", name: "Ekonomi", hoursPerWeek: 3, grades: [11, 12], majors: ["IPS"] },
-		{ code: "GEO", name: "Geografi", hoursPerWeek: 3, grades: [11, 12], majors: ["IPS"] },
-		{ code: "SOC", name: "Sosiologi", hoursPerWeek: 3, grades: [11, 12], majors: ["IPS"] },
-		{ code: "SEJ", name: "Sejarah", hoursPerWeek: 2, grades: [11, 12], majors: ["IPS"] },
+		{
+			code: "EKO",
+			name: "Ekonomi",
+			hoursPerWeek: 3,
+			grades: [11, 12],
+			majors: ["IPS"],
+		},
+		{
+			code: "GEO",
+			name: "Geografi",
+			hoursPerWeek: 3,
+			grades: [11, 12],
+			majors: ["IPS"],
+		},
+		{
+			code: "SOC",
+			name: "Sosiologi",
+			hoursPerWeek: 3,
+			grades: [11, 12],
+			majors: ["IPS"],
+		},
+		{
+			code: "SEJ",
+			name: "Sejarah",
+			hoursPerWeek: 2,
+			grades: [11, 12],
+			majors: ["IPS"],
+		},
 
 		// Bahasa (11-12)
-		{ code: "ARAB", name: "Bahasa Arab", hoursPerWeek: 3, grades: [11, 12], majors: ["Bahasa"] },
-		{ code: "MAND", name: "Bahasa Mandarin", hoursPerWeek: 3, grades: [11, 12], majors: ["Bahasa"] },
+		{
+			code: "ARAB",
+			name: "Bahasa Arab",
+			hoursPerWeek: 3,
+			grades: [11, 12],
+			majors: ["Bahasa"],
+		},
+		{
+			code: "MAND",
+			name: "Bahasa Mandarin",
+			hoursPerWeek: 3,
+			grades: [11, 12],
+			majors: ["Bahasa"],
+		},
 
 		// Teknologi (10-11)
-		{ code: "TIK", name: "Teknologi Informasi", hoursPerWeek: 2, grades: [10, 11], majors: ["Teknologi", "IPA"] },
+		{
+			code: "TIK",
+			name: "Teknologi Informasi",
+			hoursPerWeek: 2,
+			grades: [10, 11],
+			majors: ["Teknologi", "IPA"],
+		},
 
-		// Sejarah (10)
-		{ code: "SEJ10", name: "Sejarah", hoursPerWeek: 2, grades: [10] },
+		// Sejarah (10 untuk semua, 11-12 untuk IPS)
+		{
+			code: "SEJ10",
+			name: "Sejarah",
+			hoursPerWeek: 2,
+			grades: [10],
+			majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		},
+		{
+			code: "SEJ",
+			name: "Sejarah",
+			hoursPerWeek: 2,
+			grades: [11, 12],
+			majors: ["IPS"],
+		},
 	];
 
 	// Generate assignments untuk setiap subject
@@ -368,7 +537,10 @@ function generateAssignments(teachers, classrooms) {
 		const suitableTeachers = relevantTeachers.filter((t) => {
 			const grades = subject.grades || [10, 11, 12];
 			const majors = subject.majors || MAJORS;
-			return grades.some((g) => t.grades.includes(g)) && majors.some((m) => t.majors.includes(m));
+			return (
+				grades.some((g) => t.grades.includes(g)) &&
+				majors.some((m) => t.majors.includes(m))
+			);
 		});
 
 		if (suitableTeachers.length === 0) continue;
@@ -393,6 +565,7 @@ function generateAssignments(teachers, classrooms) {
 				teacherName: teacher.name,
 				teacherSubject: subject.name,
 				subjectCode: subject.code,
+				subjectName: subject.name,
 				classCode: cls.code,
 				hoursPerWeek: subject.hoursPerWeek,
 			});
@@ -436,11 +609,15 @@ async function seedDatabase() {
 
 		// 2. Generate classrooms
 		const classrooms = generateClassrooms();
-		console.log(`✅ Generated ${classrooms.length} classrooms dengan major assignment`);
+		console.log(
+			`✅ Generated ${classrooms.length} classrooms dengan major assignment`,
+		);
 
 		// 3. Seed teachers
 		await seedCollection("teachers", teachers);
-		console.log(`✅ Seeded ${teachers.length} teachers dengan grade + major specialization`);
+		console.log(
+			`✅ Seeded ${teachers.length} teachers dengan grade + major specialization`,
+		);
 
 		// 4. Seed subjects
 		await seedCollection("subjects", subjects);
@@ -488,7 +665,7 @@ async function seedDatabase() {
 
 			if (!teacherId || !subjectId || !classroomId) {
 				console.warn(
-					`⚠️  Skip: guru "${a.teacherName}", mapel "${a.subjectCode}", atau kelas "${a.classCode}" tidak ditemukan`
+					`⚠️  Skip: guru "${a.teacherName}", mapel "${a.subjectCode}", atau kelas "${a.classCode}" tidak ditemukan`,
 				);
 				continue;
 			}
@@ -496,7 +673,7 @@ async function seedDatabase() {
 			batch.set(db.collection("assignments").doc(), {
 				teacherId,
 				subjectId,
-				classroomId,
+				classIds: [classroomId], // ← FIX: array of classroom IDs
 				hoursPerWeek: a.hoursPerWeek,
 				createdAt: new Date(),
 			});
@@ -516,19 +693,27 @@ async function seedDatabase() {
 		console.log(`✅ Seeded ${count} assignments dengan resolve ID\n`);
 
 		// Summary
-		console.log("=" .repeat(60));
+		console.log("=".repeat(60));
 		console.log("📊 SEEDING SUMMARY");
-		console.log("=" .repeat(60));
+		console.log("=".repeat(60));
 		console.log(`   • Teachers      : ${teachers.length}`);
 		console.log(`   • Subjects      : ${subjects.length}`);
 		console.log(`   • Classrooms    : ${classrooms.length}`);
 		console.log(`   • Assignments   : ${count}`);
 		console.log("\n📌 Distribution:");
-		console.log(`   • IPA:       ${MAJOR_DISTRIBUTION.IPA} × 3 grades = ${MAJOR_DISTRIBUTION.IPA * 3} kelas`);
-		console.log(`   • IPS:       ${MAJOR_DISTRIBUTION.IPS} × 3 grades = ${MAJOR_DISTRIBUTION.IPS * 3} kelas`);
-		console.log(`   • Bahasa:    ${MAJOR_DISTRIBUTION.Bahasa} × 3 grades = ${MAJOR_DISTRIBUTION.Bahasa * 3} kelas`);
-		console.log(`   • Teknologi: ${MAJOR_DISTRIBUTION.Teknologi} × 3 grades = ${MAJOR_DISTRIBUTION.Teknologi * 3} kelas`);
-		console.log("=" .repeat(60));
+		console.log(
+			`   • IPA:       ${MAJOR_DISTRIBUTION.IPA} × 3 grades = ${MAJOR_DISTRIBUTION.IPA * 3} kelas`,
+		);
+		console.log(
+			`   • IPS:       ${MAJOR_DISTRIBUTION.IPS} × 3 grades = ${MAJOR_DISTRIBUTION.IPS * 3} kelas`,
+		);
+		console.log(
+			`   • Bahasa:    ${MAJOR_DISTRIBUTION.Bahasa} × 3 grades = ${MAJOR_DISTRIBUTION.Bahasa * 3} kelas`,
+		);
+		console.log(
+			`   • Teknologi: ${MAJOR_DISTRIBUTION.Teknologi} × 3 grades = ${MAJOR_DISTRIBUTION.Teknologi * 3} kelas`,
+		);
+		console.log("=".repeat(60));
 		console.log("✨ Seeding complete!\n");
 
 		process.exit(0);

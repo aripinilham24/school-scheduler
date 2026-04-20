@@ -66,6 +66,10 @@ export function MapelCard({ mapel, index, onEdit, onDelete, onView }) {
 
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-[#6b6375]">
+          <BookOpen size={12} className="text-[#9ca3af] shrink-0" />
+          <span className="font-medium">Kategori: {mapel.category ?? "-"}</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-[#6b6375]">
           <GraduationCap size={12} className="text-[#9ca3af] shrink-0" />
           <span className="font-medium">Guru: {mapel.teacher ?? "-"}</span>
         </div>

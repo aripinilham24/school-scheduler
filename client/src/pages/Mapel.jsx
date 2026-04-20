@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useMapel } from "@/hooks/useMapel";
+import { useTeachers } from "@/hooks/useTeachers";
 import StatCard from "@/components/layout/StatCard";
 import { MapelCard } from "@/components/layout/MapelCard";
 import { EmptyState } from "@/components/layout/EmptyState";
@@ -20,13 +21,15 @@ import Modal from "@/components/layout/Modal";
 const INITIAL_FORM_STATE = {
   name: "",
   code: "",
-  teacher: "",
+  category: "",
   description: "",
+  teacher: "",
 };
 
 export default function MapelPage() {
   const { mapel, loading, error, addMapel, updateMapel, deleteMapel } =
     useMapel();
+  const { teachers } = useTeachers();
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -39,6 +42,7 @@ export default function MapelPage() {
       (m) =>
         (m.name || "").toLowerCase().includes(lcSearch) ||
         (m.code || "").toLowerCase().includes(lcSearch) ||
+        (m.category || "").toLowerCase().includes(lcSearch) ||
         (m.teacher || "").toLowerCase().includes(lcSearch),
     );
   }, [mapel, search]);
@@ -54,8 +58,9 @@ export default function MapelPage() {
     setFormData({
       name: mapelItem.name || "",
       code: mapelItem.code || "",
-      teacher: mapelItem.teacher || "",
+      category: mapelItem.category || "",
       description: mapelItem.description || "",
+      teacher: mapelItem.teacher || "",
     });
     setModal("edit");
   };
@@ -72,8 +77,16 @@ export default function MapelPage() {
     event.preventDefault();
 
     const payload = {
-      ...formData,
+      name: formData.name,
+      code: formData.code,
+      category: formData.category,
+      description: formData.description,
     };
+
+    // Include teacher if selected (will be used to create assignment)
+    if (formData.teacher) {
+      payload.teacher = formData.teacher;
+    }
 
     try {
       if (modal === "add") {
@@ -187,14 +200,14 @@ export default function MapelPage() {
           />
           <StatCard
             icon={GraduationCap}
-            label="Guru Unik"
-            value={new Set(mapel.map((m) => m.teacher)).size}
+            label="Guru Pengampu"
+            value={new Set(mapel.map((m) => m.teacher).filter(t => t && t !== "-")).size}
             color="bg-[#10B981]"
           />
           <StatCard
             icon={Users}
-            label="Total Jam"
-            value={mapel.reduce((a, m) => a + (m.hours || 0), 0)}
+            label="Kategori Unik"
+            value={new Set(mapel.map((m) => m.category).filter(c => c)).size}
             color="bg-[#F59E0B]"
           />
         </div>
@@ -271,14 +284,32 @@ export default function MapelPage() {
                 />
               </label>
               <label className="block">
-                <span className="text-sm font-medium text-[#475569]">Guru</span>
+                <span className="text-sm font-medium text-[#475569]">Kategori</span>
                 <input
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  placeholder="Wajib, IPA, IPS, Bahasa, Teknologi, dst"
+                  className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-[#475569]">Guru Pengampu</span>
+                <select
                   name="teacher"
                   value={formData.teacher}
                   onChange={handleInputChange}
                   className="mt-2 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#08060d] outline-none focus:border-[#6C63FF] focus:ring-2 focus:ring-[rgba(108,99,255,0.12)]"
-                  required
-                />
+                >
+                  <option value="">-- Pilih Guru --</option>
+                  {teachers
+                    ?.sort((a, b) => a.name.localeCompare(b.name))
+                    .map((t) => (
+                      <option key={t.id} value={t.name}>
+                        {t.name} ({t.subject})
+                      </option>
+                    ))}
+                </select>
               </label>
             </div>
 

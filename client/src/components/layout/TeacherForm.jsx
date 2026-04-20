@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { useMapel } from "@/hooks/useMapel";
 
 export const TEACHER_FORM_DEFAULT = {
   name: "",
@@ -14,21 +15,6 @@ export const TEACHER_FORM_DEFAULT = {
   courses: 0,
 };
 
-const SUBJECTS = [
-  "Matematika",
-  "Bahasa Indonesia",
-  "Bahasa Inggris",
-  "Fisika",
-  "Kimia",
-  "Biologi",
-  "Sejarah",
-  "Geografi",
-  "Ekonomi",
-  "Sosiologi",
-  "Pendidikan Jasmani",
-  "Seni Budaya",
-];
-
 const GRADES = [10, 11, 12];
 const MAJORS = ["IPA", "IPS", "Bahasa", "Teknologi"];
 
@@ -38,8 +24,12 @@ export function TeacherForm({
   onClose,
   isEdit,
 }) {
+  const { mapel } = useMapel();
   const [form, setForm] = useState({ ...TEACHER_FORM_DEFAULT, ...initial });
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  // Extract subject names from mapel array
+  const subjectOptions = mapel.map(m => m.name).sort();
 
   const toggleArrayValue = (key, value) => {
     const current = form[key] || [];
@@ -113,11 +103,15 @@ export function TeacherForm({
             className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#08060d] focus:outline-none focus:border-[#6C63FF] transition-all bg-white"
           >
             <option value="">Pilih mapel</option>
-            {SUBJECTS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            {subjectOptions.length > 0 ? (
+              subjectOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))
+            ) : (
+              <option disabled>Loading mapel...</option>
+            )}
           </select>
         </div>
       </div>

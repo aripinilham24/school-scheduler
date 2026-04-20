@@ -245,6 +245,103 @@ const teachers = [
 		phone: "+62 824-3456-7891",
 		status: "Active",
 	},
+
+	// ── Informatika (semua grade) ──
+	{
+		name: "Reza Gunawan, S.Kom.",
+		subject: "Informatika",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "reza.gunawan@sman1.id",
+		phone: "+62 826-1234-5678",
+		status: "Active",
+	},
+	{
+		name: "Dina Ratnasari, S.Kom.",
+		subject: "Informatika",
+		grades: [10, 11, 12],
+		majors: ["Teknologi", "IPA", "IPS"],
+		email: "dina.ratnasari@sman1.id",
+		phone: "+62 827-2345-6789",
+		status: "Active",
+	},
+
+	// ── Kewirausahaan (semua grade) ──
+	{
+		name: "Drs. Irwanto Wijaya",
+		subject: "Kewirausahaan",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "irwanto@sman1.id",
+		phone: "+62 828-3456-7890",
+		status: "Active",
+	},
+
+	// ── Bahasa Daerah (semua grade) ──
+	{
+		name: "Dra. Nur Azizah",
+		subject: "Bahasa Jawa",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "nur.azizah@sman1.id",
+		phone: "+62 829-4567-8901",
+		status: "Active",
+	},
+
+	// ── Tambah Guru Ekstra untuk Matematika (overload di core subjects) ──
+	{
+		name: "Dr. Suryanto, M.Pd.",
+		subject: "Matematika",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "suryanto@sman1.id",
+		phone: "+62 830-5678-9012",
+		status: "Active",
+	},
+
+	// ── Tambah Guru untuk Bahasa Indonesia ──
+	{
+		name: "Dra. Yani Kusuma",
+		subject: "Bahasa Indonesia",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "yani.kusuma@sman1.id",
+		phone: "+62 831-6789-0123",
+		status: "Active",
+	},
+
+	// ── Tambah Guru untuk Bahasa Inggris ──
+	{
+		name: "Prof. Michael Johnson, M.A.",
+		subject: "Bahasa Inggris",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "michael.johnson@sman1.id",
+		phone: "+62 832-7890-1234",
+		status: "Active",
+	},
+
+	// ── Tambah guru PJOK ──
+	{
+		name: "Drs. Agus Supriyanto",
+		subject: "Pendidikan Jasmani",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "agus.supriyanto@sman1.id",
+		phone: "+62 833-8901-2345",
+		status: "Active",
+	},
+
+	// ── Tambah guru Seni Budaya ──
+	{
+		name: "Drs. Bambang Utomo, S.Sn.",
+		subject: "Seni Budaya",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		email: "bambang.utomo@sman1.id",
+		phone: "+62 834-9012-3456",
+		status: "Active",
+	},
 ];
 
 // ── MATA PELAJARAN (Subjects dengan spesialisasi per jurusan) ──
@@ -370,6 +467,33 @@ const subjects = [
 		category: "Teknologi",
 		grades: [10, 11],
 		majors: ["Teknologi", "IPA"],
+	},
+
+	// Informatika (semua grade)
+	{
+		code: "INF",
+		name: "Informatika",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
+
+	// Kewirausahaan (semua grade)
+	{
+		code: "KEW",
+		name: "Kewirausahaan",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+	},
+
+	// Bahasa Jawa (semua grade)
+	{
+		code: "BJW",
+		name: "Bahasa Jawa",
+		category: "Wajib",
+		grades: [10, 11, 12],
+		majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
 	},
 ];
 
@@ -525,6 +649,35 @@ function generateAssignments(teachers, classrooms) {
 			hoursPerWeek: 2,
 			grades: [11, 12],
 			majors: ["IPS"],
+		},
+
+		// ── Mata Pelajaran Tambahan (Memperkaya Kurikulum) ──
+
+		// Informatika (semua grade, semua jurusan)
+		{
+			code: "INF",
+			name: "Informatika",
+			hoursPerWeek: 3,
+			grades: [10, 11, 12],
+			majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		},
+
+		// Kewirausahaan (semua grade, semua jurusan)
+		{
+			code: "KEW",
+			name: "Kewirausahaan",
+			hoursPerWeek: 2,
+			grades: [10, 11, 12],
+			majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
+		},
+
+		// Bahasa Jawa (semua grade, semua jurusan)
+		{
+			code: "BJW",
+			name: "Bahasa Jawa",
+			hoursPerWeek: 2,
+			grades: [10, 11, 12],
+			majors: ["IPA", "IPS", "Bahasa", "Teknologi"],
 		},
 	];
 

@@ -6,15 +6,13 @@ const mapelCollection = db.collection("subjects");
 // Standarisasi Input dan Validasi
 function normalizeMapelInput(raw) {
   return {
-    name: (raw.name || "").toString().trim(),
-    code: (raw.code || "").toString().trim(),
-    level: (raw.level || "").toString().trim(),
-    description: (raw.description || "").toString().trim(),
-    credits: raw.credits !== undefined ? Number(raw.credits) : undefined,
-    hours: raw.hours !== undefined ? Number(raw.hours) : undefined,
-    teacher: (raw.teacher || "").toString().trim(),
-    status: (raw.status || "").toString().trim(),
-  };
+		name: (raw.name || "").toString().trim(),
+		code: (raw.code || "").toString().trim(),
+		category: (raw.category || "").toString().trim(),
+		description: (raw.description || "").toString().trim(),
+		grades: Array.isArray(raw.grades) ? raw.grades : [],
+		majors: Array.isArray(raw.majors) ? raw.majors : [],
+	};
 }
 
 // Validasi Payload untuk Create dan Update
@@ -24,21 +22,6 @@ function validateMapelPayload(payload, { requireAllFields = false } = {}) {
 
   if (!mapel.name) errors.push("name harus diisi");
   if (!mapel.code) errors.push("code harus diisi");
-  if (!mapel.level) errors.push("level harus diisi");
-
-  if (requireAllFields || payload.credits !== undefined) {
-    if (mapel.credits === undefined || !Number.isInteger(mapel.credits) || mapel.credits < 0) {
-      errors.push("credits harus integer >= 0");
-    }
-  }
-  if (requireAllFields || payload.hours !== undefined) {
-    if (mapel.hours === undefined || !Number.isInteger(mapel.hours) || mapel.hours < 0) {
-      errors.push("hours harus integer >= 0");
-    }
-  }
-
-  if (!mapel.teacher) errors.push("teacher harus diisi");
-  if (!mapel.status) errors.push("status harus diisi");
 
   return { mapel, errors };
 }
@@ -120,6 +103,7 @@ export async function getMapelById(id) {
   if (!doc.exists) return null;
 
   const mapel = { id: doc.id, ...doc.data() };
+  console.log(`[getMapelById] Getting mapel: id=${id}, name=${mapel.name}`);
 
 	// Join dengan guru dari assignments
 	try {
@@ -128,8 +112,14 @@ export async function getMapelById(id) {
 			.where("subjectId", "==", id)
 			.get();
 
+		console.log(
+			`[getMapelById] Found ${assignmentsSnap.size} assignments for subject ${id}`,
+		);
+
 		if (!assignmentsSnap.empty) {
 			const assignment = assignmentsSnap.docs[0].data();
+			console.log(`[getMapelById] Assignment data:`, assignment);
+
 			if (assignment.teacherId) {
 				const teacherDoc = await db
 					.collection("teachers")
@@ -137,8 +127,17 @@ export async function getMapelById(id) {
 					.get();
 				if (teacherDoc.exists) {
 					mapel.teacher = teacherDoc.data().name || "-";
+					console.log(
+						`[getMapelById] Teacher found and joined: ${mapel.teacher}`,
+					);
+				} else {
+					console.log(
+						`[getMapelById] Teacher doc not found for ID: ${assignment.teacherId}`,
+					);
 				}
 			}
+		} else {
+			console.log(`[getMapelById] No assignments found for subject ${id}`);
 		}
 	} catch (err) {
 		console.error("Error joining teacher info:", err);
@@ -199,6 +198,109 @@ export async function updateMapel(id, payload) {
   return getMapelById(id);
 }
 
+// Link guru ke subject (create/update assignment)
+export async function assignTeacherToSubject(subjectId, teacherName) {
+  console.log(`[assignTeacherToSubject] Starting: subjectId=${subjectId}, teacherName=${teacherName}`);
+  
+  if (!subjectId || !teacherName) {
+    const err = new Error("Subject ID dan Teacher Name diperlukan");
+    err.status = 400;
+    throw err;
+  }
+
+  // Get subject details
+  const subjectDoc = await mapelCollection.doc(subjectId).get();
+  if (!subjectDoc.exists) {
+    const err = new Error("Subject tidak ditemukan");
+    err.status = 404;
+    throw err;
+  }
+
+  const subject = { id: subjectDoc.id, ...subjectDoc.data() };
+  console.log(`[assignTeacherToSubject] Subject found: name=${subject.name}, grades=${JSON.stringify(subject.grades)}, majors=${JSON.stringify(subject.majors)}`);
+
+  // Find teacher by name (case-insensitive trim)
+  const cleanTeacherName = teacherName.trim();
+  const allTeachersSnap = await db.collection("teachers").get();
+  let foundTeacher = null;
+  
+  allTeachersSnap.forEach((doc) => {
+    const teacher = doc.data();
+    if (teacher.name && teacher.name.trim() === cleanTeacherName) {
+      foundTeacher = { id: doc.id, ...teacher };
+    }
+  });
+
+  if (!foundTeacher) {
+    console.error(`[assignTeacherToSubject] Teacher NOT FOUND: "${teacherName}"`);
+    const err = new Error(`Guru "${teacherName}" tidak ditemukan`);
+    err.status = 404;
+    throw err;
+  }
+
+  const teacherId = foundTeacher.id;
+  console.log(`[assignTeacherToSubject] Teacher found: id=${teacherId}, name=${foundTeacher.name}`);
+
+  // Find all classrooms matching subject's grades and majors
+  let classroomQuery = db.collection("classrooms");
+  const snapshot = await classroomQuery.get();
+  const matchingClassrooms = [];
+
+  snapshot.forEach((doc) => {
+    const classroom = doc.data();
+    const subjGrades = (subject.grades && subject.grades.length > 0) ? subject.grades : [10, 11, 12];
+    const subjMajors = (subject.majors && subject.majors.length > 0) ? subject.majors : ["IPA", "IPS", "Bahasa", "Teknologi"];
+
+    if (subjGrades.includes(classroom.grade) && subjMajors.includes(classroom.major)) {
+      matchingClassrooms.push({ id: doc.id, ...classroom });
+    }
+  });
+  
+  console.log(`[assignTeacherToSubject] Matching classrooms found: ${matchingClassrooms.length}`);
+
+  // Delete existing assignments for this subject (from any teacher)
+  const existingSnap = await db
+    .collection("assignments")
+    .where("subjectId", "==", subjectId)
+    .get();
+
+  console.log(`[assignTeacherToSubject] Deleting ${existingSnap.size} old assignments`);
+
+  const batch = db.batch();
+
+  // Delete old assignments
+  existingSnap.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+
+  // Get hours per week from seed data
+  const hoursPerWeek = subject.hoursPerWeek || 2;
+
+  // Create new assignments for all matching classrooms
+  const classIds = matchingClassrooms.map((c) => c.id);
+  console.log(`[assignTeacherToSubject] Creating assignment with classIds count: ${classIds.length}`);
+  
+  if (classIds.length > 0) {
+    const assignmentData = {
+      teacherId,
+      subjectId,
+      classIds,
+      hoursPerWeek,
+      createdAt: new Date(),
+    };
+    console.log(`[assignTeacherToSubject] Assignment data:`, assignmentData);
+    batch.set(db.collection("assignments").doc(), assignmentData);
+  }
+
+  await batch.commit();
+  console.log(`[assignTeacherToSubject] Batch committed successfully`);
+  
+  // Fetch and return updated mapel with teacher info joined
+  const updated = await getMapelById(subjectId);
+  console.log(`[assignTeacherToSubject] Returning updated mapel:`, updated);
+  return updated;
+}
+
 // Hapus Mapel
 export async function deleteMapel(id) {
   if (!id) {
@@ -219,9 +321,10 @@ export async function deleteMapel(id) {
 }
 
 export default {
-  listMapel,
-  getMapelById,
-  createMapel,
-  updateMapel,
-  deleteMapel,
+	listMapel,
+	getMapelById,
+	createMapel,
+	updateMapel,
+	deleteMapel,
+	assignTeacherToSubject,
 };

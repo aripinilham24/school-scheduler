@@ -27,26 +27,66 @@ export async function getById(req, res, next) {
 
 export async function create(req, res, next) {
   try {
-    const mapel = await mapelService.createMapel(req.body);
-    res.status(201).json({ data: mapel });
-  } catch (error) {
-    if (error.status) {
-      return res.status(error.status).json({ error: error.message, details: error.details || [] });
-    }
-    next(error);
-  }
+		console.log(`[mapel create] Creating with body:`, req.body);
+		let mapel = await mapelService.createMapel(req.body);
+		console.log(`[mapel create] Mapel created with ID: ${mapel.id}`);
+
+		// If teacher is provided, assign them to the subject
+		if (req.body.teacher) {
+			console.log(
+				`[mapel create] Teacher provided: ${req.body.teacher}, assigning...`,
+			);
+			try {
+				mapel = await mapelService.assignTeacherToSubject(
+					mapel.id,
+					req.body.teacher,
+				);
+				console.log(`[mapel create] Teacher assignment successful`);
+			} catch (assignErr) {
+				console.warn("Teacher assignment warning:", assignErr.message);
+				// Don't fail if assignment fails, subject is already created
+			}
+		} else {
+			console.log(`[mapel create] No teacher provided`);
+		}
+
+		res.status(201).json({ data: mapel });
+	} catch (error) {
+		if (error.status) {
+			return res
+				.status(error.status)
+				.json({ error: error.message, details: error.details || [] });
+		}
+		next(error);
+	}
 }
 
 export async function update(req, res, next) {
   try {
-    const mapel = await mapelService.updateMapel(req.params.id, req.body);
-    res.json({ data: mapel });
-  } catch (error) {
-    if (error.status) {
-      return res.status(error.status).json({ error: error.message, details: error.details || [] });
-    }
-    next(error);
-  }
+		let mapel = await mapelService.updateMapel(req.params.id, req.body);
+
+		// If teacher is provided, assign them to the subject
+		if (req.body.teacher) {
+			try {
+				mapel = await mapelService.assignTeacherToSubject(
+					req.params.id,
+					req.body.teacher,
+				);
+			} catch (assignErr) {
+				console.warn("Teacher assignment warning:", assignErr.message);
+				// Don't fail if assignment fails, subject is already updated
+			}
+		}
+
+		res.json({ data: mapel });
+	} catch (error) {
+		if (error.status) {
+			return res
+				.status(error.status)
+				.json({ error: error.message, details: error.details || [] });
+		}
+		next(error);
+	}
 }
 
 export async function remove(req, res, next) {

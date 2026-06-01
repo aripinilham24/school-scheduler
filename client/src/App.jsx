@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import Layout from "./Layout/Layout";
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
@@ -8,39 +9,14 @@ import Teacher from "./pages/Teacher";
 import Schedule from "./pages/Schedule";
 import Subjects from "./pages/Mapel";
 
-// Untuk App yang belum selesai dapat menampilkan halaman sementara
 function ComingSoon({ page }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3 text-[#9ca3af]">
       <div className="w-16 h-16 rounded-2xl bg-[rgba(108,99,255,0.08)] flex items-center justify-center">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <rect
-            x="4"
-            y="4"
-            width="24"
-            height="4"
-            rx="2"
-            fill="#6C63FF"
-            opacity="0.3"
-          />
-          <rect
-            x="4"
-            y="13"
-            width="16"
-            height="4"
-            rx="2"
-            fill="#6C63FF"
-            opacity="0.5"
-          />
-          <rect
-            x="4"
-            y="22"
-            width="20"
-            height="4"
-            rx="2"
-            fill="#6C63FF"
-            opacity="0.7"
-          />
+          <rect x="4" y="4" width="24" height="4" rx="2" fill="#6C63FF" opacity="0.3" />
+          <rect x="4" y="13" width="16" height="4" rx="2" fill="#6C63FF" opacity="0.5" />
+          <rect x="4" y="22" width="20" height="4" rx="2" fill="#6C63FF" opacity="0.7" />
         </svg>
       </div>
       <p className="text-sm font-semibold text-[#08060d]">Halaman {page}</p>
@@ -49,81 +25,87 @@ function ComingSoon({ page }) {
   );
 }
 
-// Route config
-const ROUTES = [
-  { path: "/", element: <Navigate to="/home" replace /> },
+const PROTECTED_ROUTES = [
+  { path: "/", redirect: "/home" },
   { path: "/home", element: <Home page="Home" />, active: "Home" },
-  {
-    path: "/class",
-    element: <Class page="Class" />,
-    active: "Class",
-  },
-  {
-    path: "/teachers",
-    element: <Teacher page="Teachers" />,
-    active: "Teachers",
-  },
-  {
-    path: "/subjects",
-    element: <Subjects page="Mata Pelajaran" />,
-    active: "Mata Pelajaran",
-  },
-  {
-    path: "/generate",
-    element: <Schedule page="Generate Jadwal" />,
-    active: "Generate Jadwal",
-  },
-  {
-    path: "/payments",
-    element: <ComingSoon page="Payments" />,
-    active: "Payments",
-  },
-  {
-    path: "/library",
-    element: <ComingSoon page="Library" />,
-    active: "Library",
-  },
-  {
-    path: "/reports",
-    element: <ComingSoon page="Reports" />,
-    active: "Reports",
-  },
+  { path: "/class", element: <Class page="Class" />, active: "Class" },
+  { path: "/teachers", element: <Teacher page="Teachers" />, active: "Teachers" },
+  { path: "/subjects", element: <Subjects page="Mata Pelajaran" />, active: "Mata Pelajaran" },
+  { path: "/generate", element: <Schedule page="Generate Jadwal" />, active: "Generate Jadwal" },
+  { path: "/payments", element: <ComingSoon page="Payments" />, active: "Payments" },
+  { path: "/library", element: <ComingSoon page="Library" />, active: "Library" },
+  { path: "/reports", element: <ComingSoon page="Reports" />, active: "Reports" },
 ];
 
-const routes_auth = [
-  { path: "/login", element: <Login /> },
-  { path: "/register", element: <Register /> },
-//   { path: "forgot-password", element: <ForgotPassword /> },
-];
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-[#6C63FF] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function GuestRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-[#6C63FF] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+  if (user) return <Navigate to="/home" replace />;
+  return children;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+      <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+
+      {PROTECTED_ROUTES.map(({ path, element, active, redirect }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute>
+              {redirect ? (
+                <Navigate to={redirect} replace />
+              ) : active ? (
+                <Layout activeItem={active}>{element}</Layout>
+              ) : (
+                element
+              )}
+            </ProtectedRoute>
+          }
+        />
+      ))}
+
+      <Route
+        path="*"
+        element={
+          <div className="h-screen flex flex-col items-center justify-center gap-3 text-[#9ca3af]">
+            <p className="text-6xl font-bold text-[#E5E7EB]">404</p>
+            <p className="text-sm font-medium">Halaman tidak ditemukan</p>
+          </div>
+        }
+      />
+    </Routes>
+  );
+}
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {routes_auth.map(({ path, element }) => (
-          <Route key={path} path={path} element={element} />
-        ))}
-        {ROUTES.map(({ path, element, active }) => (
-          <Route
-            key={path}
-            path={path}
-            element={
-              active ? <Layout activeItem={active}>{element}</Layout> : element
-            }
-          />
-        ))}
-
-        {/* 404 fallback */}
-        <Route
-          path="*"
-          element={
-            <div className="h-screen flex flex-col items-center justify-center h-full gap-3 text-[#9ca3af]">
-              <p className="text-6xl font-bold text-[#E5E7EB]">404</p>
-              <p className="text-sm font-medium">Halaman tidak ditemukan</p>
-            </div>
-          }
-        />
-      </Routes>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

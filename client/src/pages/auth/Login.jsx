@@ -1,5 +1,9 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Clock } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
-import {Clock} from "lucide-react";
 import {
   Card,
   CardAction,
@@ -13,6 +17,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await login(email, password);
+      navigate("/home");
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Login Gagal", text: err.message });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-2 justify-around items-center w-full h-screen">
       <div className="flex flex-col justify-center items-center bg-[#ffff] text-[#6C63FF] h-full">
@@ -30,42 +53,53 @@ function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="flex flex-col gap-6">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
-                  className="border-[#ffff]"
+                    className="border-[#ffff]"
                     id="email"
                     type="email"
                     placeholder="m@example.com"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
+                    <Link
+                      to="/forgot-password"
                       className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                     >
                       Forgot your password?
-                    </a>
+                    </Link>
                   </div>
-                  <Input className="border-[#ffff]" id="password" type="password" required />
+                  <Input
+                    className="border-[#ffff]"
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? "Loading..." : "Login"}
+                </Button>
               </div>
             </form>
           </CardContent>
           <CardFooter className="flex-col gap-2 bg-transparent">
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
             <Button variant="outline" className="w-full">
               Login with Google
             </Button>
             <CardAction>
-              <Button variant="link">Don't have an account? Register</Button>
+              <Button variant="link" asChild>
+                <Link to="/register">Don't have an account? Register</Link>
+              </Button>
             </CardAction>
           </CardFooter>
         </Card>

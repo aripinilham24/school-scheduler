@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Moon, Bell, ChevronDown, Radio } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 const notifications = [
   { id: 1, text: "New student enrolled in React course", time: "2m ago", unread: true },
@@ -8,6 +11,8 @@ const notifications = [
 ];
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showNotif, setShowNotif] = useState(false);
@@ -149,8 +154,8 @@ export default function Navbar() {
               />
             </div>
             <div className="flex flex-col items-start leading-none">
-              <span className="text-[13px] font-semibold text-[#08060d]">Irham M.</span>
-              <span className="text-[11px] text-[#9ca3af]">Admin</span>
+              <span className="text-[13px] font-semibold text-[#08060d]">{user?.name || "User"}</span>
+              <span className="text-[11px] text-[#9ca3af] capitalize">{user?.role || ""}</span>
             </div>
             <ChevronDown
               size={14}
@@ -164,8 +169,8 @@ export default function Navbar() {
           {showProfile && (
             <div className="absolute right-0 top-14 w-[200px] bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_20px_40px_rgba(108,99,255,0.15)] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="px-4 py-3 border-b border-[#E5E7EB]">
-                <p className="text-[13px] font-semibold text-[#08060d]">Irham Muhammad</p>
-                <p className="text-[11px] text-[#9ca3af]">irham@skillset.id</p>
+                <p className="text-[13px] font-semibold text-[#08060d]">{user?.name || "User"}</p>
+                <p className="text-[11px] text-[#9ca3af]">{user?.email || ""}</p>
               </div>
               {["My Profile", "Settings", "Help Center"].map((item) => (
                 <button
@@ -176,7 +181,25 @@ export default function Navbar() {
                 </button>
               ))}
               <div className="border-t border-[#E5E7EB]">
-                <button className="w-full text-left px-4 py-2.5 text-[13px] text-[#FF4757] hover:bg-[#FFF1F2] transition-colors font-medium">
+                <button
+                  onClick={() => {
+                    setShowProfile(false);
+                    Swal.fire({
+                      title: "Yakin ingin logout?",
+                      icon: "question",
+                      showCancelButton: true,
+                      confirmButtonText: "Ya, logout",
+                      cancelButtonText: "Batal",
+                      confirmButtonColor: "#6C63FF",
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        logout();
+                        navigate("/login");
+                      }
+                    });
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-[13px] text-[#FF4757] hover:bg-[#FFF1F2] transition-colors font-medium"
+                >
                   Sign out
                 </button>
               </div>

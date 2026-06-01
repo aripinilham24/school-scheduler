@@ -905,7 +905,46 @@ async function seed() {
 		// 4. Seed assignments (relasi guru → mapel → kelas)
 		await seedAssignments(teacherDocs, subjectDocs, classroomDocs);
 
-		// 5. Ringkasan
+		// 5. Seed users (admin + user untuk autentikasi)
+		console.log("\n👤 Membuat user untuk autentikasi...");
+		const users = [
+			{ email: "admin@sman1.id", password: "admin123", name: "Admin", role: "admin" },
+			{ email: "user@sman1.id", password: "user123", name: "User", role: "user" },
+		];
+
+		for (const u of users) {
+			try {
+				const userRecord = await admin.auth().createUser({
+					email: u.email,
+					password: u.password,
+					displayName: u.name,
+				});
+				await db.collection("users").doc(userRecord.uid).set({
+					uid: userRecord.uid,
+					email: u.email,
+					name: u.name,
+					role: u.role,
+					createdAt: admin.firestore.FieldValue.serverTimestamp(),
+				});
+				console.log(`  ✅ User "${u.email}" (${u.role}) — dibuat`);
+			} catch (e) {
+				if (e.code === "auth/email-already-exists") {
+					const existing = await admin.auth().getUserByEmail(u.email);
+					await db.collection("users").doc(existing.uid).set({
+						uid: existing.uid,
+						email: u.email,
+						name: u.name,
+						role: u.role,
+						createdAt: admin.firestore.FieldValue.serverTimestamp(),
+					});
+					console.log(`  ⚠️  User "${u.email}" — sudah ada, diperbarui`);
+				} else {
+					console.error(`  ❌ User "${u.email}" gagal:`, e.message);
+				}
+			}
+		}
+
+		// 6. Ringkasan
 		console.log("\n🎉 Seed selesai!\n");
 		console.log("📊 Ringkasan:");
 		console.log(`   • Guru      : ${teachers.length} orang`);
@@ -914,8 +953,9 @@ async function seed() {
 		);
 		console.log(`   • Mapel     : ${subjects.length} mata pelajaran`);
 		console.log(
-			`   • Siswa     : ${classrooms.reduce((s, c) => s + c.students, 0)} total\n`,
+			`   • Siswa     : ${classrooms.reduce((s, c) => s + c.students, 0)} total`,
 		);
+		console.log(`   • Auth user : admin@sman1.id (admin), user@sman1.id (user)\n`);
 
 		process.exit(0);
 	} catch (err) {

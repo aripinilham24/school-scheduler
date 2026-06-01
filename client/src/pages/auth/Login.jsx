@@ -3,18 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -37,72 +26,114 @@ function Login() {
   };
 
   return (
-    <div className="grid grid-cols-2 justify-around items-center w-full h-screen">
-      <div className="flex flex-col justify-center items-center bg-[#ffff] text-[#6C63FF] h-full">
-        <Clock size={60} className="mb-4" />
-        <h1 className="text-5xl font-bold">School Scheduler</h1>
-        <p>Login page content goes here</p>
-      </div>
+    <div className="flex items-center justify-center w-full h-screen"style={{ background: "linear-gradient(135deg, #6C63FF 0%, #a78bfa 40%, #DDD6FE 70%, #f3f0ff 100%)" }}>
+      <div className="grid grid-cols-[2fr_3fr] w-full max-w-3xl rounded-2xl overflow-hidden shadow-xl">
 
-      <div className="bg-[#6C63FF] h-full items-center justify-center flex text-white">
-        <Card className="w-full max-w-sm bg-transparent border-none shadow-none ring-0">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Login to your account</CardTitle>
-            <CardDescription>
-              Enter your details below to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    className="border-[#ffff]"
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <Link
-                      to="/forgot-password"
-                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </Link>
-                  </div>
-                  <Input
-                    className="border-[#ffff]"
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? "Loading..." : "Login"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-          <CardFooter className="flex-col gap-2 bg-transparent">
-            <Button variant="outline" className="w-full">
-              Login with Google
-            </Button>
-            <CardAction>
-              <Button variant="link" asChild>
-                <Link to="/register">Don't have an account? Register</Link>
-              </Button>
-            </CardAction>
-          </CardFooter>
-        </Card>
+        {/* Left panel */}
+        <div className="relative bg-[#6C63FF] flex flex-col justify-between p-10 overflow-hidden">
+          {/* Decorative shapes */}
+          <div className="absolute w-44 h-44 rounded-full bg-white/10 -bottom-10 -left-10" />
+          <div className="absolute w-20 h-20 rounded-full bg-white/10 top-8 right-6" />
+          <div className="absolute w-7 h-7 bg-white/10 rounded-md rotate-12 top-28 right-16" />
+
+          {/* Logo */}
+          <div className="flex items-center gap-2 relative z-10">
+            <div className="w-8 h-8 rounded-lg border-[1.5px] border-white/60 flex items-center justify-center">
+              <Clock size={14} className="text-white" />
+            </div>
+            <span className="text-white text-sm font-medium">School Scheduler</span>
+          </div>
+
+          {/* Copy */}
+          <div className="relative z-10 my-8">
+            <h1 className="text-white text-3xl font-semibold leading-tight mb-3">
+              Welcome<br />Back!
+            </h1>
+            <p className="text-white/75 text-sm leading-relaxed mb-8 max-w-[190px]">
+              To keep connected with us please login with your personal info
+            </p>
+            <Link
+              to="/register"
+              className="inline-block px-7 py-2.5 border-[1.5px] border-white/70 rounded-full text-white text-xs font-medium tracking-widest uppercase hover:bg-white/10 transition-colors"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+
+        {/* Right panel */}
+        <div className="bg-white flex flex-col justify-center px-10 py-10">
+          <h2 className="text-[#6C63FF] text-2xl font-semibold text-center mb-6">
+            Sign in to Account
+          </h2>
+
+          {/* Social buttons */}
+          <div className="flex justify-center gap-3 mb-5">
+            {[
+              { label: "Facebook", icon: "f" },
+              { label: "Google", icon: "G+" },
+              { label: "LinkedIn", icon: "in" },
+            ].map(({ label, icon }) => (
+              <button
+                key={label}
+                aria-label={`Login with ${label}`}
+                className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 text-xs font-medium hover:bg-gray-50 transition-colors"
+              >
+                {icon}
+              </button>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-gray-100" />
+            <span className="text-xs text-gray-400">or use your email for registration</span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            {/* Email field used for login */}
+            <div className="flex items-center gap-3 px-4 h-11 border border-gray-200 rounded-xl bg-gray-50 focus-within:border-[#6C63FF] transition-colors">
+              <span className="text-gray-400 text-base">✉</span>
+              <input
+                type="email"
+                placeholder="Email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 bg-transparent text-sm outline-none text-gray-700 placeholder-gray-400"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 px-4 h-11 border border-gray-200 rounded-xl bg-gray-50 focus-within:border-[#6C63FF] transition-colors">
+              <span className="text-gray-400 text-base">🔒</span>
+              <input
+                type="password"
+                placeholder="Password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="flex-1 bg-transparent text-sm outline-none text-gray-700 placeholder-gray-400"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 mt-1 bg-[#6C63FF] text-white text-xs font-medium tracking-widest uppercase rounded-full hover:bg-[#5a52e0] transition-colors disabled:opacity-60"
+            >
+              {submitting ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+
+          <p className="text-center mt-5 text-xs text-gray-400">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-[#6C63FF] font-medium hover:underline">
+              Register
+            </Link>
+          </p>
+        </div>
+
       </div>
     </div>
   );

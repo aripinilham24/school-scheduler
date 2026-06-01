@@ -25,7 +25,7 @@ export default function ClassCard({ cls, onEdit, onDelete, onView }) {
   const [menuOpen, setMenuOpen] = useState(false);
   
   const gradeLabel = gradeNames[cls.grade] || `Grade ${cls.grade}`;
-  const majorLabel = cls.major || "Umum";
+  const majorLabel = cls.major || "Reguler";
   const color = majorColors[cls.major] || {
     bg: "bg-gray-50",
     text: "text-gray-700",

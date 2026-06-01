@@ -882,8 +882,20 @@ async function seed() {
 
 		// 2. Seed data utama
 		console.log("\n📝 Memasukkan data...");
+
+		// Tambahkan major ke classrooms berdasarkan description/code
+		const majorDistribution = ["IPA", "IPA", "IPA", "IPS", "IPS", "Bahasa", "Bahasa", "Teknologi", "Teknologi"];
+		const classroomsWithMajor = classrooms.map((c, i) => {
+			if (c.major) return c;
+			if (c.description?.includes("IPA")) return { ...c, major: "IPA" };
+			if (c.description?.includes("IPS")) return { ...c, major: "IPS" };
+			if (c.description?.includes("Bahasa")) return { ...c, major: "Bahasa" };
+			if (c.grade === 10) return { ...c, major: majorDistribution[i] };
+			return { ...c, major: "Reguler" };
+		});
+
 		await seedCollection("teachers", teachers);
-		await seedCollection("classrooms", classrooms);
+		await seedCollection("classrooms", classroomsWithMajor);
 		await seedCollection("subjects", subjects);
 
 		// 3. Ambil dokumen yang baru diseed untuk dapat ID-nya

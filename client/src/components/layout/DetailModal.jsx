@@ -34,7 +34,7 @@ export default function DetailModal({ cls, onClose }) {
         <div className="grid grid-cols-2 gap-3">
           {[
             { icon: GraduationCap, label: "Tahun", value: gradeLabel },
-            { icon: BookOpen, label: "Jurusan", value: cls.major || "Umum" },
+            { icon: BookOpen, label: "Jurusan", value: cls.major || "Reguler" },
             { icon: MapPin, label: "Ruangan", value: cls.room || "-" },
             { icon: Users, label: "Siswa", value: `${cls.students || 0} / ${cls.capacity || 40}` },
           ].map(({ icon: Icon, label, value }) => (

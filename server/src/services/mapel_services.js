@@ -249,9 +249,12 @@ export async function assignTeacherToSubject(subjectId, teacherName) {
   snapshot.forEach((doc) => {
     const classroom = doc.data();
     const subjGrades = (subject.grades && subject.grades.length > 0) ? subject.grades : [10, 11, 12];
-    const subjMajors = (subject.majors && subject.majors.length > 0) ? subject.majors : ["IPA", "IPS", "Bahasa", "Teknologi"];
+    const subjMajors = (subject.majors && subject.majors.length > 0) ? subject.majors : [];
 
-    if (subjGrades.includes(classroom.grade) && subjMajors.includes(classroom.major)) {
+    const gradeMatch = subjGrades.includes(classroom.grade);
+    const majorMatch = !classroom.major || subjMajors.length === 0 || subjMajors.includes(classroom.major);
+
+    if (gradeMatch && majorMatch) {
       matchingClassrooms.push({ id: doc.id, ...classroom });
     }
   });

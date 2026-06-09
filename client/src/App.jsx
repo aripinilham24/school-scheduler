@@ -3,6 +3,7 @@ import Layout from "./Layout/Layout";
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
 import Home from "./pages/Home";
+import Analytics from "./pages/Analytics";
 import Class from "./pages/Class";
 import Teacher from "./pages/Teacher";
 import Schedule from "./pages/Schedule";
@@ -53,6 +54,11 @@ function ComingSoon({ page }) {
 const ROUTES = [
   { path: "/", element: <Navigate to="/home" replace /> },
   { path: "/home", element: <Home page="Home" />, active: "Home" },
+  {
+    path: "/analytics",
+    element: <Analytics page="Analitik" />,
+    active: "Analitik",
+  },
   {
     path: "/class",
     element: <Class page="Class" />,

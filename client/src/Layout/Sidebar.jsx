@@ -11,15 +11,17 @@ import {
   BarChart3,
   ChevronRight,
   Zap,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Nav item config
 const NAV_ITEMS = [
-  { icon: Home,          label: "Home",       path: "/home" },
-  { icon: Users,         label: "Class",   path: "/class" },
-  { icon: GraduationCap, label: "Teachers",   path: "/teachers" },
-  { icon: BookOpen,      label: "Mata Pelajaran",    path: "/subjects" },
+  { icon: Home,          label: "Home",         path: "/home" },
+  { icon: TrendingUp,    label: "Analitik",     path: "/analytics" },
+  { icon: Users,         label: "Class",        path: "/class" },
+  { icon: GraduationCap, label: "Teachers",     path: "/teachers" },
+  { icon: BookOpen,      label: "Mata Pelajaran", path: "/subjects" },
   { icon: ClipboardList, label: "Generate Jadwal", path: "/generate" },
 ];
 
